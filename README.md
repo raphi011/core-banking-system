@@ -30,7 +30,7 @@ A core banking system is the backbone of a financial institution. It is the "sys
 
 ### Double-Entry Bookkeeping
 
-The most fundamental principle in this system is double-entry bookkeeping, invented in 15th century Italy and still the foundation of all modern accounting. The rule is simple:
+The most fundamental principle in banking is double-entry bookkeeping, invented in 15th century Italy and still the foundation of all modern accounting. The rule is simple:
 
 > Every transaction must have equal debits and credits.
 
@@ -91,15 +91,15 @@ In practice, the General Ledger might show one line item for "Total Customer Dep
 
 ### Amounts and Precision
 
-All monetary amounts are represented as `int64` values in the smallest unit of the currency (e.g., cents for USD, pence for GBP, yen for JPY). This is the same approach used by Stripe, most banks, and payment processors.
+All monetary amounts are represented as integer values in the smallest unit of the currency (e.g., cents for USD, pence for GBP, yen for JPY). This is the same approach used by Stripe, most banks, and payment processors.
 
 This avoids floating-point precision issues entirely. For example:
 
 | Display | Internal | Unit |
 |---------|----------|------|
-| $100.50 USD | `10050` | cents |
-| EUR 1,234.56 | `123456` | cents |
-| JPY 10,000 | `10000` | yen (no minor units) |
+| $100.50 USD | 10050 | cents |
+| EUR 1,234.56 | 123456 | cents |
+| JPY 10,000 | 10000 | yen (no minor units) |
 
 The caller is responsible for knowing the minor unit convention of each currency and converting to/from display format.
 
@@ -145,7 +145,7 @@ The value date is not set by a single actor — it depends on the transaction ty
 
 - **Regulation** constrains all of the above. Laws like the US Expedited Funds Availability Act (Reg CC) set maximum hold periods for check deposits, putting an upper bound on how far the value date can lag behind the booking date.
 
-In this codebase, the value date is a field on the transaction request — the caller provides it. In a production system, a rules engine upstream would determine it before calling the ledger.
+In practice, most core banking systems have a rules engine upstream of the ledger that determines the value date automatically before posting the transaction.
 
 #### How Statements Use Both Dates
 
@@ -156,7 +156,7 @@ Customer statements use both dates for different purposes:
 
 Most retail bank statements show both dates per transaction when they differ. The statement *period* itself (e.g., "January 1–31") and the running daily balances are driven by value date. A transaction booked on January 31 with a value date of February 1 would appear on the February statement for balance purposes, even though the customer sees it in their transaction feed on January 31.
 
-This is why the end-of-day snapshots in this system use value date — they are the foundation for interest accrual and statement generation.
+This is why end-of-day snapshots use value date — they are the foundation for interest accrual and statement generation.
 
 ### Multi-Legged Transactions
 
@@ -180,11 +180,11 @@ This is the native-currency model. If reporting in a base currency is needed (e.
 
 Holds model the "auth-capture" flow common in card payments and other scenarios where funds must be reserved before a final amount is known:
 
-1. **Authorization** (`CreateHold`): When a customer swipes their debit card at a gas pump, the bank places a hold (e.g., $100) on the account. The book balance is unchanged, but the available balance drops by $100.
+1. **Authorization:** When a customer swipes their debit card at a gas pump, the bank places a hold (e.g., $100) on the account. The book balance is unchanged, but the available balance drops by $100.
 
-2. **Capture** (`CaptureHold`): When the customer finishes pumping ($45 of gas), the hold is captured for the actual amount. The hold is removed and a real transaction is posted for $45.
+2. **Capture:** When the customer finishes pumping ($45 of gas), the hold is captured for the actual amount. The hold is removed and a real transaction is posted for $45.
 
-3. **Release** (`ReleaseHold`): If the transaction is cancelled (e.g., the customer drives away without pumping), the hold is released and the available balance is restored.
+3. **Release:** If the transaction is cancelled (e.g., the customer drives away without pumping), the hold is released and the available balance is restored.
 
 The difference between book balance and available balance is significant:
 
@@ -201,7 +201,7 @@ Unsettled holds do not exist as ledger entries. The ledger only records posted t
 
 A hold only touches the ledger when it is **captured** — at that point a real transaction is posted with proper debits and credits. If the hold is **released**, nothing ever hits the ledger; from an accounting perspective it's as if it never happened.
 
-This is why `Hold` is a separate type from `Transaction` in the codebase — holds are stored in their own collection, not in the transaction journal. The ledger is only involved when `CaptureHold` converts a hold into a real `Transaction`.
+In a typical core banking architecture, holds are stored separately from the transaction journal. The ledger is only involved when a hold is captured and converted into a real transaction.
 
 ### Idempotency
 
@@ -210,7 +210,7 @@ In distributed systems, clients may retry requests due to timeouts or network fa
 The idempotency key mechanism prevents this:
 
 1. The client generates a unique key (e.g., a UUID) for each logical operation and includes it in the request.
-2. If the system receives a request with a key it has already processed, it returns `ErrDuplicateIdempotencyKey` instead of creating a duplicate.
+2. If the system receives a request with a key it has already processed, it returns an error instead of creating a duplicate.
 3. The client can then look up the original transaction by the key.
 
 ### Transaction Reversal
