@@ -110,6 +110,22 @@ In many real-world scenarios the two dates can diverge by days or even weeks:
 
 Interest is calculated based on value dates, not booking dates. This distinction is critical for accurate financial calculations — using the wrong date can mean customers earn too much or too little interest, and regulatory balance reports would be incorrect.
 
+### Who Decides the Value Date
+
+The value date is not set by a single actor — it depends on the transaction type:
+
+- **Automated rules** handle the majority of cases. The bank's system assigns the value date based on predefined policies per product and payment channel (e.g., domestic wires get same-day value, checks get T+2, international transfers get T+1 to T+3 depending on the corridor).
+
+- **Payment networks** can dictate it. SWIFT messages for international transfers include a value date field set by the sending bank that the receiving bank is expected to honor. Securities settlement follows market conventions like T+2 that both parties agree to.
+
+- **The customer** influences it for scheduled payments and standing orders — they choose when the payment should take effect, which becomes the value date.
+
+- **Operations staff** set it manually for corrections and adjustments, deciding the appropriate value date based on when the economic event actually occurred or should have occurred.
+
+- **Regulation** constrains all of the above. Laws like the US Expedited Funds Availability Act (Reg CC) set maximum hold periods for check deposits, putting an upper bound on how far the value date can lag behind the booking date.
+
+In this codebase, the value date is a field on the transaction request — the caller provides it. In a production system, a rules engine upstream would determine it before calling the ledger.
+
 ### How Statements Use Both Dates
 
 Customer statements use both dates for different purposes:
