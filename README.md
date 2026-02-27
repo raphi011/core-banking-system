@@ -8,6 +8,11 @@ A simplified but functionally complete Go library modeling the core accounting e
 - [Accounting Foundations](#accounting-foundations)
   - [Double-Entry Bookkeeping](#double-entry-bookkeeping)
   - [Chart of Accounts](#chart-of-accounts)
+    - [Asset](#asset--things-the-bank-owns-or-is-owed)
+    - [Liability](#liability--things-the-bank-owes-to-others)
+    - [Equity](#equity--the-owners-residual-interest)
+    - [Revenue](#revenue--income-the-bank-earns)
+    - [Expense](#expense--costs-the-bank-incurs)
   - [Ledger and Subledger Hierarchy](#ledger-and-subledger-hierarchy)
   - [Amounts and Precision](#amounts-and-precision)
 - [Transactions](#transactions)
@@ -67,6 +72,70 @@ Each type has a "normal balance" — the direction that increases it:
 | **Equity** | Credit | Owner's residual interest | Paid-in capital, retained earnings |
 | **Revenue** | Credit | Income earned | Interest income, fee income, trading gains |
 | **Expense** | Debit | Costs incurred | Interest expense, salaries, rent, provisions |
+
+#### Asset — Things the Bank Owns or Is Owed
+
+An asset is anything of value that the bank controls. The most intuitive example is cash sitting in the vault — that is clearly something the bank owns. But assets also include money that other people owe *to* the bank. When a bank gives a customer a $200,000 mortgage, the bank doesn't lose $200,000 — it *converts* one asset (cash) into another asset (a loan receivable). The customer now owes the bank $200,000 plus interest, and that obligation is valuable.
+
+Common asset accounts in a bank:
+- **Cash / reserves** — physical currency and balances held at the central bank
+- **Loans to customers** — mortgages, personal loans, credit card balances
+- **Securities** — government bonds, corporate bonds, and other investments the bank holds
+- **Interbank lending** — short-term loans to other banks (e.g., overnight lending)
+
+Assets have a **debit normal balance**, meaning a debit increases an asset and a credit decreases it. When the bank receives a $500 cash deposit from a customer, its cash (asset) increases by a $500 debit — but as we'll see, the other side of that entry is a liability.
+
+#### Liability — Things the Bank Owes to Others
+
+A liability is an obligation the bank has to pay someone else. The most important liability for a bank is **customer deposits**. When a customer deposits $500 into their checking account, the bank now *owes* that customer $500 on demand. The customer's account balance is, from the bank's perspective, a debt.
+
+This is often the most counterintuitive part: the money in your checking account is the bank's liability, not its asset. The bank has the cash (asset), but it owes that cash back to you (liability).
+
+Common liability accounts in a bank:
+- **Customer deposits** — checking accounts, savings accounts, certificates of deposit
+- **Borrowings** — money the bank has borrowed from other banks or the central bank
+- **Bonds payable** — debt securities the bank has issued to raise capital
+
+Liabilities have a **credit normal balance**. A credit increases a liability and a debit decreases it. When a customer deposits $500, the bank credits the customer's deposit account (liability goes up) and debits its cash account (asset goes up). Both sides increase — the bank has more cash *and* owes more to the customer.
+
+#### Equity — The Owner's Residual Interest
+
+Equity is what's left over after you subtract liabilities from assets. It represents the shareholders' stake in the bank. If a bank has $100M in assets and $92M in liabilities, the equity is $8M.
+
+Equity accounts don't change as frequently as the others. They mainly move when the bank issues new shares, buys back shares, or at year-end when net profit (revenue minus expenses) is rolled into retained earnings.
+
+Common equity accounts:
+- **Paid-in capital** — money shareholders invested when buying the bank's stock
+- **Retained earnings** — accumulated profits the bank has kept rather than distributing as dividends
+
+Equity has a **credit normal balance**. Profits increase equity (credit), losses decrease it (debit).
+
+#### Revenue — Income the Bank Earns
+
+Revenue accounts track money flowing into the business from its operations. For a bank, the primary source of revenue is interest charged on loans — the bank lends money at a higher rate than it pays on deposits, and the difference (the *net interest margin*) is how banks make most of their money.
+
+Common revenue accounts:
+- **Interest income** — interest earned on loans, mortgages, and securities
+- **Fee income** — account maintenance fees, ATM fees, wire transfer fees, overdraft fees
+- **Trading gains** — profits from buying and selling securities
+
+Revenue has a **credit normal balance**. When a customer pays $50 in monthly interest on a loan, the bank credits interest income (revenue goes up) and debits the customer's loan account (the loan balance — an asset — decreases because the customer has repaid part of it) or debits cash (if the payment comes from outside the bank).
+
+At year-end, revenue accounts are "closed" — their balances are zeroed out and the net profit is transferred into retained earnings (equity).
+
+#### Expense — Costs the Bank Incurs
+
+Expense accounts track the costs of running the bank. Just as revenue increases the owners' stake, expenses decrease it.
+
+Common expense accounts:
+- **Interest expense** — interest paid to depositors and bondholders (this is the bank's biggest cost)
+- **Salaries and benefits** — compensation for employees
+- **Provisions for loan losses** — money set aside in case borrowers default
+- **Operating costs** — rent, technology, compliance, legal
+
+Expenses have a **debit normal balance**. When the bank pays $10 in monthly interest to a savings account customer, it debits interest expense (expense goes up) and credits the customer's deposit account (liability goes up — the bank now owes the customer $10 more).
+
+Like revenue, expense accounts are closed at year-end into retained earnings.
 
 ### Ledger and Subledger Hierarchy
 
