@@ -152,10 +152,12 @@ In practice, most core banking systems have a rules engine upstream of the ledge
 
 Customer statements use both dates for different purposes:
 
-- **Transaction listing** is ordered by **booking date** — it reflects when each transaction was recorded, matching the chronological order the customer sees activity appear.
-- **Balance calculations** (opening balance, closing balance, interest accrual) are based on **value date** — this determines the economic effect.
+- **Transaction listing** is ordered by **booking date** — it reflects when each transaction was recorded, matching the chronological order the customer sees activity appear. When a customer requests their February statement, the transaction list shows all transactions with a booking date in February.
+- **Balance calculations** (opening balance, closing balance, interest accrual) are based on **value date** — this determines the economic effect. The opening and closing balances on the February statement reflect all transactions with a value date in February.
 
-Most retail bank statements show both dates per transaction when they differ. The statement *period* itself (e.g., "January 1–31") and the running daily balances are driven by value date. A transaction booked on January 31 with a value date of February 1 would appear on the February statement for balance purposes, even though the customer sees it in their transaction feed on January 31.
+Because the two dates can differ, there can be subtle mismatches on a statement — the listed transactions may not perfectly "add up" to the balance change. For example, a transaction booked on February 25 with a value date of March 1 would appear in February's transaction listing but would not affect February's closing balance. Conversely, a transaction booked on January 31 with a value date of February 1 would not appear in February's transaction listing but would affect February's opening balance.
+
+Most retail bank statements show both dates per transaction when they differ, so the customer can see why the figures may not seem to reconcile at first glance. The statement *period* itself (e.g., "January 1–31") and the running daily balances are driven by value date.
 
 This is why end-of-day snapshots use value date — they are the foundation for interest accrual and statement generation.
 
