@@ -92,11 +92,23 @@ Every transaction carries two dates:
 
 - **Value Date:** The date when the transaction takes economic effect. This determines when interest starts accruing, when funds become available, and which business day "owns" the transaction. The value date may be in the past (back-dated) or future (forward-dated) relative to the booking date.
 
-**Example:** A wire transfer received on Friday evening might have:
-- Booking Date: Friday 7:00 PM (when the bank's system processed it)
-- Value Date: Monday (next business day, when funds are available)
+### When Value Date Differs from Booking Date
 
-Interest is calculated based on value dates, not booking dates. This distinction is critical for accurate financial calculations.
+In many real-world scenarios the two dates can diverge by days or even weeks:
+
+- **Weekend/holiday processing:** A wire transfer received Friday evening is booked immediately (Booking Date: Friday 7:00 PM) but funds are only available on the next business day (Value Date: Monday). Over a long holiday weekend this gap can stretch to 4–5 days.
+
+- **Check deposits:** A customer deposits a check on Monday and the bank records it right away (Booking Date: Monday). However, the check must clear through the interbank settlement network, so the value date might be Wednesday or Thursday depending on the clearing cycle. Until then the funds don't accrue interest and may not be available for withdrawal.
+
+- **Back-dated corrections:** An operations team discovers on March 5 that a corporate payment should have settled on February 28. The correction is booked today (Booking Date: March 5) but given a value date of February 28 so that interest calculations for the intervening days are correct. Without this, the customer would lose several days of interest.
+
+- **Forward-dated standing orders:** A customer schedules a rent payment for the 1st of next month. The bank may book the instruction today (Booking Date: January 20) but assign a value date of February 1, when the money actually moves and interest implications begin.
+
+- **International transfers:** Cross-border payments routed through correspondent banks can take 2–3 business days to settle. The sending bank books the debit immediately, but the receiving bank's credit may carry a value date days later once the nostro/vostro accounts are reconciled.
+
+- **Securities settlement:** A stock trade executed on Monday (trade date T) typically settles on Wednesday (T+2). The cash leg is booked on Monday but value-dated to Wednesday when ownership and funds actually transfer.
+
+Interest is calculated based on value dates, not booking dates. This distinction is critical for accurate financial calculations — using the wrong date can mean customers earn too much or too little interest, and regulatory balance reports would be incorrect.
 
 ### How Statements Use Both Dates
 
