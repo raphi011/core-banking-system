@@ -81,6 +81,17 @@ Every transaction carries two dates:
 
 Interest is calculated based on value dates, not booking dates. This distinction is critical for accurate financial calculations.
 
+### How Statements Use Both Dates
+
+Customer statements use both dates for different purposes:
+
+- **Transaction listing** is ordered by **booking date** — it reflects when each transaction was recorded, matching the chronological order the customer sees activity appear.
+- **Balance calculations** (opening balance, closing balance, interest accrual) are based on **value date** — this determines the economic effect.
+
+Most retail bank statements show both dates per transaction when they differ. The statement *period* itself (e.g., "January 1–31") and the running daily balances are driven by value date. A transaction booked on January 31 with a value date of February 1 would appear on the February statement for balance purposes, even though the customer sees it in their transaction feed on January 31.
+
+This is why the end-of-day snapshots in this system use value date — they are the foundation for interest accrual and statement generation.
+
 ## Holds (Authorization / Pending Transactions)
 
 Holds model the "auth-capture" flow common in card payments and other scenarios where funds must be reserved before a final amount is known:
