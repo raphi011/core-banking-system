@@ -65,40 +65,23 @@ Assets = Liabilities + Equity + (Revenue - Expenses)
 
 The five types split into two groups: three permanent accounts on the **balance sheet** (a snapshot of the bank's financial position at a point in time) and two temporary accounts on the **income statement** (activity over a period). At year-end, net income flows into equity, connecting the two:
 
-```
-                         THE ACCOUNTING EQUATION
-    ─────────────────────────────────────────────────────────────
+```mermaid
+graph TD
+    subgraph "BALANCE SHEET (permanent)"
+        A["<b>ASSETS</b><br/>Cash, Loans, Securities<br/><i>Debit normal</i>"]
+        L["<b>LIABILITIES</b><br/>Deposits, Borrowings<br/><i>Credit normal</i>"]
+        E["<b>EQUITY</b><br/>Capital, Retained Earnings<br/><i>Credit normal</i>"]
+    end
 
-    BALANCE SHEET (permanent)          INCOME STATEMENT (temporary)
-    what the bank has & owes           how the bank performed
-    ┌─────────────────────────┐        ┌─────────────────────────┐
-    │                         │        │                         │
-    │   ┌───────────────┐     │        │   ┌───────────────┐     │
-    │   │    ASSETS      │     │        │   │   REVENUE      │     │
-    │   │               │     │        │   │               │     │
-    │   │  Cash, Loans, │     │        │   │  Interest on  │     │
-    │   │  Securities   │     │        │   │  loans, Fees  │     │
-    │   └───────────────┘     │        │   └───────┬───────┘     │
-    │          =              │        │           │             │
-    │   ┌───────────────┐     │        │           │ minus       │
-    │   │  LIABILITIES   │     │        │           │             │
-    │   │               │     │        │   ┌───────┴───────┐     │
-    │   │  Deposits,    │     │        │   │   EXPENSES     │     │
-    │   │  Borrowings   │     │        │   │               │     │
-    │   └───────────────┘     │        │   │  Interest on  │     │
-    │          +              │        │   │  deposits,    │     │
-    │   ┌───────────────┐     │        │   │  Salaries     │     │
-    │   │    EQUITY ◄────────────────────── └───────────────┘     │
-    │   │               │     │  net   │         equals           │
-    │   │  Capital,     │     │ income │     NET INCOME           │
-    │   │  Retained     │     │ flows  │  (rolled into Equity     │
-    │   │  Earnings     │     │  in    │   at year-end)           │
-    │   └───────────────┘     │        │                         │
-    └─────────────────────────┘        └─────────────────────────┘
+    subgraph "INCOME STATEMENT (temporary)"
+        R["<b>REVENUE</b><br/>Interest on loans, Fees<br/><i>Credit normal</i>"]
+        X["<b>EXPENSES</b><br/>Interest on deposits, Salaries<br/><i>Debit normal</i>"]
+    end
 
-    Debit-normal: Assets, Expenses     Credit-normal: Liabilities,
-    (debits increase these)              Equity, Revenue
-                                         (credits increase these)
+    A -- "= Liabilities + Equity<br/>+ (Revenue − Expenses)" --> L
+    L -- + --> E
+    R -- "minus" --> X
+    X -- "Net Income<br/>flows into Equity<br/>at year-end" --> E
 ```
 
 Each type has a "normal balance" — the direction that increases it:
