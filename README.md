@@ -12,6 +12,7 @@ A simplified but functionally complete Go library modeling the core accounting e
   - [Amounts and Precision](#amounts-and-precision)
 - [Transactions](#transactions)
   - [Booking Date vs. Value Date](#booking-date-vs-value-date)
+  - [Balance Types](#balance-types)
   - [Multi-Legged Transactions](#multi-legged-transactions)
   - [Multi-Currency](#multi-currency)
   - [Holds (Authorization / Pending Transactions)](#holds-authorization--pending-transactions)
@@ -157,6 +158,26 @@ Customer statements use both dates for different purposes:
 Most retail bank statements show both dates per transaction when they differ. The statement *period* itself (e.g., "January 1–31") and the running daily balances are driven by value date. A transaction booked on January 31 with a value date of February 1 would appear on the February statement for balance purposes, even though the customer sees it in their transaction feed on January 31.
 
 This is why end-of-day snapshots use value date — they are the foundation for interest accrual and statement generation.
+
+### Balance Types
+
+A single account carries three distinct balances at any point in time:
+
+- **Value-date balance** (also called the **interest-bearing balance**): The balance computed from transactions whose value date has passed. This is what the bank uses to calculate interest, generate end-of-day snapshots, and produce regulatory reports. It represents the economic reality of the account.
+
+- **Book balance** (also called the **ledger balance**): The balance computed from all posted transactions based on their booking date, regardless of value date. It reflects everything that has been recorded in the system.
+
+- **Available balance**: The book balance minus any active holds. This is what ATMs and point-of-sale terminals check to decide whether a transaction should be approved.
+
+For example, a single account might show all three balances simultaneously:
+
+| Balance | Amount | What drives it |
+|---------|--------|----------------|
+| Value-date balance | $9,500 | Only transactions whose value date has passed |
+| Book balance | $10,000 | All posted transactions |
+| Available balance | $9,200 | Book balance minus $800 in active holds |
+
+The value-date balance can be lower than the book balance if a forward-dated transaction has been booked but its value date has not yet arrived. It can be higher if a back-dated correction added economic value to a past date.
 
 ### Multi-Legged Transactions
 
