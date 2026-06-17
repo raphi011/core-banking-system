@@ -30,6 +30,15 @@ A simplified but functionally complete Go library modeling the core accounting e
   - [What Is Settlement](#what-is-settlement)
   - [Common Settlement Cycles](#common-settlement-cycles)
   - [Settlement and the Ledger](#settlement-and-the-ledger)
+- [Payments, Clearing, and Settlement (the `payment` package)](#payments-clearing-and-settlement-the-payment-package)
+  - [Why a Separate Package](#why-a-separate-package)
+  - [The Multi-Bank Model](#the-multi-bank-model)
+  - [Payment Schemes](#payment-schemes)
+  - [The Payment Lifecycle](#the-payment-lifecycle)
+  - [Posting Choreography: SEPA Credit Transfer](#posting-choreography-sepa-credit-transfer)
+  - [Netting: A Worked Example](#netting-a-worked-example)
+  - [SEPA Direct Debit and Returns](#sepa-direct-debit-and-returns)
+  - [Deliberate Simplifications](#deliberate-simplifications)
 - [Reporting and Compliance](#reporting-and-compliance)
   - [End-of-Day Snapshots](#end-of-day-snapshots)
   - [Audit Trail](#audit-trail)
@@ -444,6 +453,133 @@ During the settlement window, the transaction exists in a **pending** state. The
 - **Holds bridge the gap** between initiation and settlement. When a customer deposits a check, the bank may place a hold that expires once settlement is confirmed, preventing the customer from spending funds that have not yet arrived.
 
 - **Reconciliation** of nostro/vostro accounts (the accounts banks maintain with each other) happens as part of the settlement process. Discrepancies between expected and actual settlements must be investigated and resolved.
+
+## Payments, Clearing, and Settlement (the `payment` package)
+
+The `ledger` package described above is a single bank's book of record. But a *payment* — sending money from one person's account to another's — usually crosses a boundary between two banks, and that is where clearing and settlement live. The `payment` package builds that world on top of the ledger so the mechanics are concrete and testable.
+
+### Why a Separate Package
+
+A payment system is not the same thing as a general ledger. The ledger answers "what does this bank owe and own?"; the payment system answers "how does money actually move between banks?". Keeping them in separate packages mirrors how real institutions are organised — the payment rails (SEPA, card networks, RTGS) sit *above* each bank's accounting system and instruct it. The `payment` package depends on `ledger` and orchestrates postings into it; the ledger has no knowledge of payments.
+
+### The Multi-Bank Model
+
+The key design choice is that **each participant bank keeps its own `ledger.Service`**, and there is **one more `ledger.Service` for the central bank**. Banks never write into each other's books — they only meet at the central bank, where each holds a **reserve account**. This is what makes the difference between clearing and settlement real rather than abstract:
+
+- **Clearing** is the exchange and *netting* of payment instructions. The banks agree on who owes whom. No central-bank money moves.
+- **Settlement** is the movement of reserves between banks at the central bank. This is the moment of *finality*.
+
+Each participant's chart of accounts holds:
+
+| Account | Type | Purpose |
+|---|---|---|
+| Customer deposits | Liability | What the bank owes each customer. |
+| Clearing Suspense | Liability | In-transit funds that have left a customer but not yet settled between banks. Returns to zero once a cycle settles. |
+| Reserve at Central Bank | Asset | The bank's claim on the central bank. Moves only at settlement and **mirrors** the bank's reserve account in the central-bank ledger (the classic nostro/vostro reconciliation). |
+
+The central-bank ledger holds one **Reserve: \<Bank\>** liability account per participant (the central bank owes each member its reserves) plus a balancing **Settlement Assets** account used when reserves are funded.
+
+### Payment Schemes
+
+Different payment products behave differently, so the package abstracts them behind a `Scheme` interface:
+
+```go
+type Scheme interface {
+    ID() SchemeID
+    Direction() SchemeDirection      // Push (payer initiates) | Pull (payee initiates)
+    SettlementModel() SettlementModel // Net (batched) | Gross (instant, per-payment)
+    RequiresMandate() bool
+    AllowsReturn() bool
+    SettlementDelay() time.Duration   // determines the value date
+    Validate(p *Payment, ctx SchemeContext) error
+}
+```
+
+Two schemes ship today, both net-settled:
+
+- **SEPA Credit Transfer (`SCT`)** — a **push** payment: the payer's bank initiates and sends the funds (T+1). Maps to the ISO 20022 `pacs.008` message.
+- **SEPA Direct Debit (`SDD`)** — a **pull** payment: the payee's bank collects funds from the payer under a previously signed **mandate** (T+2), and the payer may demand a **return**. Maps to `pacs.003`.
+
+Crucially, money always flows **debtor → creditor** regardless of who *initiates* — `Direction` only governs initiation and whether a mandate is required. This is why the same posting machinery serves both schemes. Adding **instant payments** (real-time *gross* settlement) or **card** schemes (authorise/capture, then clear) is a matter of implementing `Scheme` and registering it — the orchestrator does not change.
+
+### The Payment Lifecycle
+
+Every payment travels through an explicit state machine:
+
+```
+Initiated ──▶ Accepted ──▶ Cleared ──▶ Settled
+                  │                        │
+                  ▼                        ▼
+              Rejected                  Returned
+```
+
+- **Initiated → Accepted**: the scheme validates the payment (funds available, mandate valid) and the **debtor leg** is posted — the payer's money leaves their account into the bank's clearing suspense, value-dated to the settlement date.
+- **Accepted → Cleared**: the clearing cycle reaches its cut-off and net positions are computed.
+- **Cleared → Settled**: reserves move at the central bank and the **creditor leg** is posted, paying the payee.
+- **Rejected**: before clearing, the debtor leg is reversed.
+- **Returned**: after settlement, a SEPA R-transaction unwinds the flow.
+
+### Posting Choreography: SEPA Credit Transfer
+
+Alice (at Bank A) pays Bob (at Bank B) €30.00 (`3000` cents).
+
+**1. Initiation** — in Bank A's ledger, value-dated to settlement:
+
+```
+Bank A:  Debit  Alice (Liability)            3000     // Alice's deposit falls
+         Credit Clearing Suspense (Liability) 3000    // Bank A now owes the network
+```
+
+**2. Clearing (cut-off)** — net positions computed; no money moves. Here `net[A] = -3000`, `net[B] = +3000`.
+
+**3. Settlement** — three postings make the money final:
+
+```
+Central Bank:  Debit  Reserve: Bank A (Liability) 3000   // A's reserves fall
+               Credit Reserve: Bank B (Liability) 3000   // B's reserves rise
+
+Bank A:        Debit  Clearing Suspense 3000             // suspense clears to zero
+               Credit Reserve at CB     3000             // A's reserve asset falls in step
+
+Bank B:        Debit  Clearing Suspense 3000             // creditor leg: release...
+               Credit Bob (Liability)   3000             // ...funds to Bob
+               Debit  Reserve at CB     3000             // B's reserve asset rises
+               Credit Clearing Suspense 3000             // and its suspense clears
+```
+
+Afterwards both banks' suspense accounts are back to zero, and each bank's **Reserve at Central Bank** asset equals the central bank's **Reserve: \<Bank\>** liability — the books reconcile.
+
+### Netting: A Worked Example
+
+Netting is the whole point of clearing. Suppose in one cycle:
+
+- Alice (Bank A) → Bob (Bank B): `30000`
+- Bob (Bank B) → Alice (Bank A): `10000`
+
+The **customers** move by the gross amounts (Alice −30000 +10000, Bob −10000 +30000), but the **banks settle only the net**:
+
+```
+net[A] = -30000 + 10000 = -20000   // Bank A pays 20000 net
+net[B] = +30000 - 10000 = +20000   // Bank B receives 20000 net
+```
+
+Only `20000` of central-bank reserves moves, not `40000`. Net positions always sum to zero, which is exactly why the central-bank settlement transaction balances.
+
+### SEPA Direct Debit and Returns
+
+A direct debit is a **pull**: the creditor (e.g. a utility) collects from the debtor. Before any collection, the debtor signs a **mandate** authorising that specific creditor. At initiation the package checks the mandate exists, is active, matches both parties, and stays within its amount limit — otherwise the payment is rejected (`ErrMandateRequired`, `ErrMandateRevoked`, `ErrMandateExceeded`, …). Mechanically the postings are identical to a credit transfer (debtor → creditor), because the money flows the same way.
+
+Direct debits can be **returned** (a SEPA R-transaction) — for example when the debtor disputes the collection or lacks funds. `ReturnPayment` posts compensating transactions that move the funds back from the creditor to the debtor across the central bank, fully unwinding the original flow and restoring both customers' balances.
+
+### Deliberate Simplifications
+
+This is a learning model, not a production processor. The simplifications are intentional:
+
+- **No ISO 20022 message parsing.** The `Payment` struct stands in for `pain.001`/`pacs.008`/`pacs.003`; the schemes only *name* the messages they correspond to.
+- **No IBAN or BIC validation.** Routing is by explicit `ParticipantID`; IBANs are free-form labels.
+- **A single currency**, using `ledger.Amount` (integer minor units). No FX.
+- **Cross-ledger postings are not atomic.** Each bank and the central bank have separate locks, so a payment touches several ledgers sequentially. The `System` serialises whole operations under one lock; a real RTGS uses a locked settlement window or two-phase commit.
+- **Returns settle immediately** rather than being batched into a later R-cycle.
 
 ## Reporting and Compliance
 

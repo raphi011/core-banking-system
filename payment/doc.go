@@ -1,0 +1,48 @@
+// Package payment implements a small, in-memory interbank payment system on
+// top of the ledger package. It exists to make the mechanics of payment
+// clearing and settlement concrete and testable.
+//
+// # The model
+//
+// Several participant banks each keep their own ledger.Service (their general
+// ledger). A separate central-bank ledger.Service holds a reserve account for
+// every participant. Banks only meet at the central bank — which is exactly
+// what makes the distinction between clearing and settlement real:
+//
+//   - Clearing is the exchange and netting of payment instructions. No central
+//     bank money moves; banks just agree on who owes whom.
+//   - Settlement is the movement of reserves between banks at the central bank.
+//     This is the point of finality.
+//
+// A payment travels through an explicit lifecycle:
+//
+//	Initiated -> Accepted -> Cleared -> Settled
+//
+// with branches to Rejected (before clearing) and Returned (a SEPA
+// R-transaction after settlement).
+//
+// # Schemes
+//
+// The Scheme interface abstracts over payment schemes. Two are implemented:
+// SEPA Credit Transfer (SCT, a push payment) and SEPA Direct Debit (SDD, a
+// pull payment requiring a mandate). Both are net-settled. The abstraction is
+// deliberately ready for real-time gross settlement (instant payments) and
+// card schemes (authorise/capture then clear) without changes to the System
+// orchestrator — adding a scheme means implementing Scheme and registering it.
+//
+// # Deliberate simplifications
+//
+// This is a learning model, not a production payment processor:
+//
+//   - No ISO 20022 (pain.001 / pacs.008 / pacs.003) message parsing; the
+//     Payment struct stands in for the instruction. Scheme docs name the
+//     messages they correspond to.
+//   - No IBAN or BIC validation; routing is by explicit ParticipantID.
+//   - A single currency, using ledger.Amount (integer minor units).
+//   - Postings across the per-bank and central-bank ledgers are NOT atomic;
+//     the System serializes whole operations under one lock. A real RTGS uses
+//     a locked settlement window. See System for details.
+//   - Returns settle immediately rather than through a later R-cycle.
+//
+// See README.md for worked examples of the SCT and SDD posting choreography.
+package payment

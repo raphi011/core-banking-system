@@ -68,6 +68,17 @@ type Service struct {
 //	sl, _ := svc.CreateSubledger(l.ID, "Accounts Receivable")
 //	acct, _ := svc.CreateAccount(sl.ID, "Customer A", ledger.Asset)
 func NewService() *Service {
+	return NewServiceWithClock(time.Now)
+}
+
+// NewServiceWithClock creates a new banking service that reads the current
+// time from the provided clock function instead of time.Now.
+//
+// This is useful when several Services must share a single, deterministic
+// time source — for example, the payment package runs one ledger per bank
+// plus a central-bank ledger and drives them all from one clock so that
+// booking dates, value dates, and audit timestamps line up across ledgers.
+func NewServiceWithClock(clock func() time.Time) *Service {
 	return &Service{
 		ledgers:          make(map[LedgerID]*Ledger),
 		subledgers:       make(map[SubledgerID]*Subledger),
@@ -77,7 +88,7 @@ func NewService() *Service {
 		idempotencyIndex: make(map[string]TransactionID),
 		accountHolds:     make(map[AccountID][]HoldID),
 		snapshots:        make(map[AccountID]map[string]*BalanceSnapshot),
-		clock:            time.Now,
+		clock:            clock,
 	}
 }
 
