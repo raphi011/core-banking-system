@@ -28,6 +28,7 @@ The sections below are organized around these layers: general-ledger concepts fi
   - [Ledger and Subledger Hierarchy](#ledger-and-subledger-hierarchy)
   - [Amounts and Precision](#amounts-and-precision)
 - [Transactions](#transactions)
+  - [Entries, Legs, and Postings](#entries-legs-and-postings)
   - [Booking Date vs. Value Date](#booking-date-vs-value-date)
   - [Balance Types](#balance-types)
   - [Multi-Legged Transactions](#multi-legged-transactions)
@@ -227,6 +228,22 @@ This avoids floating-point precision issues entirely. For example:
 The caller is responsible for converting to/from display format.
 
 ## Transactions
+
+### Entries, Legs, and Postings
+
+A few words are used interchangeably throughout this document and the code, so it is worth pinning them down up front:
+
+- **Entry:** A single debit or credit to one account. This is the `ledger.Entry` type — it carries an account, an amount, and a `Direction` (`Debit` or `Credit`). It is the smallest unit of bookkeeping.
+
+- **Leg:** A synonym for *entry*. The word is used when emphasizing that a transaction has several sides — a "two-legged" transfer has one debit entry and one credit entry, while a "multi-legged" transaction has three or more. "Leg" and "entry" refer to exactly the same thing; there is no separate `Leg` type.
+
+- **Posting:** The act of recording a transaction in the ledger (the verb, as in "to post a transaction" via `PostTransaction`). Loosely, "a posting" is also used to mean an entry that has been recorded. Posted transactions are immutable — they are never edited or deleted, only reversed (see [Transaction Reversal](#transaction-reversal)).
+
+- **Transaction:** A balanced set of entries (legs) that are posted together as one atomic unit. Within any transaction, **total debits = total credits** (see [Multi-Legged Transactions](#multi-legged-transactions)).
+
+In the `payment` layer two specific legs get their own names: the **debtor leg** is the entry that moves money out of the payer's account (posted at initiation), and the **creditor leg** is the entry that delivers money into the payee's account (posted at settlement). Both are ordinary ledger entries — the names just identify which side of a cross-bank payment they represent. See [The Payment Lifecycle](#the-payment-lifecycle).
+
+> **Trial balance:** Referenced in a few places below, this is the list of every account's balance at a point in time. Because every transaction balances, the sum of all debit balances must equal the sum of all credit balances — a trial balance that does not sum to zero signals a bookkeeping error.
 
 ### Booking Date vs. Value Date
 
