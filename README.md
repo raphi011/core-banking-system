@@ -51,6 +51,7 @@ The sections below are organized around these layers: general-ledger concepts fi
   - [Netting: A Worked Example](#netting-a-worked-example)
   - [SEPA Direct Debit and Returns](#sepa-direct-debit-and-returns)
   - [Deliberate Simplifications](#deliberate-simplifications)
+  - [Next Work](#next-work)
 - [Reporting and Compliance](#reporting-and-compliance)
   - [End-of-Day Snapshots](#end-of-day-snapshots)
   - [Audit Trail](#audit-trail)
@@ -516,7 +517,7 @@ Two schemes ship today, both net-settled:
 - **SEPA Credit Transfer (`SCT`)** — a **push** payment: the payer's bank initiates and sends the funds (T+1). Maps to the ISO 20022 `pacs.008` message.
 - **SEPA Direct Debit (`SDD`)** — a **pull** payment: the payee's bank collects funds from the payer under a previously signed **mandate** (T+2), and the payer may demand a **return**. Maps to `pacs.003`.
 
-Crucially, money always flows **debtor → creditor** regardless of who *initiates* — `Direction` only governs initiation and whether a mandate is required. This is why the same posting machinery serves both schemes. Adding **instant payments** (real-time *gross* settlement) or **card** schemes (authorise/capture, then clear) is a matter of implementing `Scheme` and registering it — the orchestrator does not change.
+Crucially, money always flows **debtor → creditor** regardless of who *initiates* — `Direction` only governs initiation and whether a mandate is required. This is why the same posting machinery serves both schemes. Other **net-settled** schemes drop in by implementing `Scheme` and registering it — the orchestrator does not change. **Instant** and **card** schemes need a little more wiring; see [Next Work](#next-work).
 
 ### The Payment Lifecycle
 
@@ -594,8 +595,22 @@ This is a learning model, not a production processor. The simplifications are in
 - **No ISO 20022 message parsing.** The `Payment` struct stands in for `pain.001`/`pacs.008`/`pacs.003`; the schemes only *name* the messages they correspond to.
 - **No IBAN or BIC validation.** Routing is by explicit `ParticipantID`; IBANs are free-form labels.
 - **A single currency**, using `ledger.Amount` (integer minor units). No FX.
-- **Cross-ledger postings are not atomic.** Each bank and the central bank have separate locks, so a payment touches several ledgers sequentially. The `System` serialises whole operations under one lock; a real RTGS uses a locked settlement window or two-phase commit.
+- **Cross-ledger postings are not atomic.** Each bank and the central bank have separate locks, so a payment touches several ledgers sequentially. The `Network` serialises whole operations under one lock; a real RTGS uses a locked settlement window or two-phase commit.
 - **Returns settle immediately** rather than being batched into a later R-cycle.
+
+### Next Work
+
+Two schemes are designed for but not yet implemented. They are the reason the `Scheme` interface carries a `SettlementModel` (Net/Gross) and the reason authorise/capture now lives in the `deposit` layer — the abstraction is in place; what remains is the wiring noted below.
+
+- **Instant payments** (SEPA Inst, FedNow, Faster Payments) — real-time **gross** settlement, 24/7. Each payment settles individually and immediately instead of being batched into a clearing cycle. This needs:
+  - a `Scheme` returning `SettlementModel() == Gross` with a near-zero `SettlementDelay`; and
+  - a settlement path that branches on `SettlementModel()` — for `Gross`, post the debtor leg, the central-bank reserve move, and the creditor leg in one shot per payment, with no netting and no cut-off.
+
+  This is the one place the orchestrator genuinely has to grow: today `SettleCycle` only implements the netted path, so a `Gross` scheme would need a `SettleNow`-style sibling (or a branch inside settlement).
+
+- **Card transactions** — an **authorise → capture → clear → settle** flow. The authorisation is a `deposit` **hold** (`CreateHold`) that reserves the cardholder's available balance; capture (`CaptureHold`) turns it into the debtor leg; clearing and settlement then reuse the existing net machinery, since card networks net much like SEPA. This slots in cleanly now that holds live in the `deposit` layer: a card scheme drives `deposit` holds while the `payment` network clears and settles the captured amounts.
+
+Both motivate two natural follow-ons: enforcing **account status** on the debit path (a `Frozen` deposit account should block a card authorisation), and **reserve-adequacy** checks before a bank's net settlement is allowed to post.
 
 ## Reporting and Compliance
 

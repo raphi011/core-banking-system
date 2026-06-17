@@ -26,10 +26,25 @@
 //
 // The Scheme interface abstracts over payment schemes. Two are implemented:
 // SEPA Credit Transfer (SCT, a push payment) and SEPA Direct Debit (SDD, a
-// pull payment requiring a mandate). Both are net-settled. The abstraction is
-// deliberately ready for real-time gross settlement (instant payments) and
-// card schemes (authorise/capture then clear) without changes to the Network
-// orchestrator — adding a scheme means implementing Scheme and registering it.
+// pull payment requiring a mandate). Both are net-settled, so adding another
+// net-settled scheme means only implementing Scheme and registering it — the
+// orchestrator does not change.
+//
+// # Next work
+//
+// Two schemes are designed for but not yet implemented:
+//
+//   - Instant payments (real-time gross settlement). The Scheme already
+//     exposes SettlementModel (Net/Gross); what remains is a settlement path
+//     that branches on it, settling a Gross payment immediately and per-payment
+//     rather than through a clearing cycle. SettleCycle currently implements
+//     only the netted path, so this is the one place the orchestrator must grow.
+//   - Card schemes (authorise/capture then clear). The authorisation is a
+//     deposit hold and the capture becomes the debtor leg; clearing and
+//     settlement reuse the existing net machinery. This slots in cleanly now
+//     that holds live in the deposit layer.
+//
+// See README.md ("Next Work") for the details.
 //
 // # Deliberate simplifications
 //
