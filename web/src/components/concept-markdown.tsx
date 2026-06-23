@@ -7,7 +7,7 @@ import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/utils";
 import { useConceptPanel } from "./concept-panel-provider";
 import { preprocessConceptMarkdown } from "./concept-links";
-import type { HintKey } from "./hint-content";
+import { hintContent, type HintKey } from "./hint-content";
 
 // Renders a concept body as markdown. `concept:` links swap the panel; internal
 // paths use next/link; everything else opens in a new tab.
@@ -32,16 +32,19 @@ export function ConceptMarkdown({ body }: { body: string }) {
         components={{
           a({ href, children }) {
             if (href?.startsWith("concept:")) {
-              const key = href.slice("concept:".length) as HintKey;
-              return (
-                <button
-                  type="button"
-                  onClick={() => openConcept(key)}
-                  className="text-primary underline decoration-dotted underline-offset-2 hover:decoration-solid"
-                >
-                  {children}
-                </button>
-              );
+              const key = href.slice("concept:".length);
+              if (key in hintContent) {
+                return (
+                  <button
+                    type="button"
+                    onClick={() => openConcept(key as HintKey)}
+                    className="text-primary underline decoration-dotted underline-offset-2 hover:decoration-solid"
+                  >
+                    {children}
+                  </button>
+                );
+              }
+              return <span>{children}</span>;
             }
             if (href?.startsWith("/")) {
               return (

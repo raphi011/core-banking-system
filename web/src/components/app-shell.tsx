@@ -34,6 +34,8 @@ interface NavItem {
   icon: LucideIcon;
 }
 
+// Network-wide screens (no participant selected). Payments, mandates, cycles
+// and settlements are global because each spans two participants.
 const NETWORK_NAV: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/payments", label: "Payments", icon: ArrowLeftRight },

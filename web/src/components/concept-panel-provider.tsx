@@ -15,6 +15,7 @@ import { validateConceptContent } from "./concept-links";
 
 const STORAGE_KEY = "concept-panel-collapsed";
 const COLLAPSE_EVENT = "concept-panel-collapsed-change";
+const DESKTOP_QUERY = "(min-width: 768px)";
 
 // Collapse preference is an external store (localStorage). Reading it via
 // useSyncExternalStore keeps hydration safe and avoids a synchronous setState
@@ -29,6 +30,7 @@ function subscribeCollapsed(callback: () => void): () => void {
 }
 
 function getCollapsedSnapshot(): boolean {
+  if (typeof localStorage === "undefined") return false;
   return localStorage.getItem(STORAGE_KEY) === "true";
 }
 
@@ -44,7 +46,6 @@ interface ConceptPanelContextValue {
   mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
   openConcept: (key: HintKey) => void;
-  closeConcept: () => void;
   togglePanel: () => void;
 }
 
@@ -83,6 +84,17 @@ export function ConceptPanelProvider({
     window.dispatchEvent(new Event(COLLAPSE_EVENT));
   }, []);
 
+  // Reveal the panel on whichever surface this viewport uses: expand the desktop
+  // rail, or open the mobile sheet. Decided at call time (not render) so it never
+  // opens the mobile sheet's full-screen overlay on desktop.
+  const revealPanel = useCallback(() => {
+    if (window.matchMedia(DESKTOP_QUERY).matches) {
+      setCollapsed(false);
+    } else {
+      setMobileOpen(true);
+    }
+  }, [setCollapsed]);
+
   // Read live params from the URL in the handler (not during render) so we
   // preserve any other query params and avoid a Suspense boundary on the app.
   const openConcept = useCallback(
@@ -90,23 +102,14 @@ export function ConceptPanelProvider({
       const params = new URLSearchParams(window.location.search);
       params.set("concept", key);
       router.push(`${pathname}?${params.toString()}`);
-      setMobileOpen(true);
+      revealPanel();
     },
-    [router, pathname],
+    [router, pathname, revealPanel],
   );
 
-  const closeConcept = useCallback(() => {
-    const params = new URLSearchParams(window.location.search);
-    params.delete("concept");
-    const query = params.toString();
-    router.push(query ? `${pathname}?${query}` : pathname);
-    setMobileOpen(false);
-  }, [router, pathname]);
-
   const togglePanel = useCallback(() => {
-    setCollapsed(false);
-    setMobileOpen(true);
-  }, [setCollapsed]);
+    revealPanel();
+  }, [revealPanel]);
 
   return (
     <ConceptPanelContext.Provider
@@ -118,7 +121,6 @@ export function ConceptPanelProvider({
         mobileOpen,
         setMobileOpen,
         openConcept,
-        closeConcept,
         togglePanel,
       }}
     >

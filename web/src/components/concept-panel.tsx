@@ -11,9 +11,8 @@ import { hintContent, type HintKey } from "./hint-content";
 
 // Resolves the concept to show: the URL's `concept` param if valid, else the
 // page default. Returns null when neither is set.
-function useActiveConcept(): HintKey | null {
+function useActiveConcept(defaultConcept: HintKey | null): HintKey | null {
   const searchParams = useSearchParams();
-  const { defaultConcept } = useConceptPanel();
   const fromUrl = searchParams.get("concept");
   if (fromUrl && fromUrl in hintContent) return fromUrl as HintKey;
   return defaultConcept;
@@ -21,8 +20,8 @@ function useActiveConcept(): HintKey | null {
 
 // The panel body — shared by the desktop rail and the mobile sheet.
 export function ConceptPanelBody({ onCollapse }: { onCollapse?: () => void }) {
-  const { openConcept } = useConceptPanel();
-  const active = useActiveConcept();
+  const { openConcept, defaultConcept } = useConceptPanel();
+  const active = useActiveConcept(defaultConcept);
 
   if (!active) {
     return (
