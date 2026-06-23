@@ -51,10 +51,12 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onInteractOutside,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  const contentRef = React.useRef<HTMLDivElement>(null)
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -65,6 +67,30 @@ function DialogContent({
           className
         )}
         {...props}
+        ref={contentRef}
+        onInteractOutside={(event) => {
+          onInteractOutside?.(event)
+          if (event.defaultPrevented) return
+          // A Radix Select/Popover opened from inside a dialog disables outside
+          // pointer events while open, which turns the dialog body into a
+          // pointer-events:none dead zone. A tap there surfaces as a click on
+          // <body>, which Radix reads as an outside click and dismisses the
+          // dialog. Keep it open when the pointer actually landed within the
+          // dialog's own bounds; genuine clicks on the overlay still dismiss it.
+          const oe = event.detail.originalEvent as { clientX?: number; clientY?: number }
+          const rect = contentRef.current?.getBoundingClientRect()
+          if (
+            rect &&
+            typeof oe.clientX === "number" &&
+            typeof oe.clientY === "number" &&
+            oe.clientX >= rect.left &&
+            oe.clientX <= rect.right &&
+            oe.clientY >= rect.top &&
+            oe.clientY <= rect.bottom
+          ) {
+            event.preventDefault()
+          }
+        }}
       >
         {children}
         {showCloseButton && (

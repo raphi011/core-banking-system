@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { HelpCircle } from "lucide-react";
 
 import {
@@ -26,15 +27,26 @@ export function Hint({ id, title, children, className }: HintProps) {
   const resolvedTitle = id ? hintContent[id].title : (title ?? "");
   const body: React.ReactNode = id ? hintContent[id].body : children;
 
+  // We own the open state so the trigger can both cancel any host action and
+  // still open. A "?" often lives inside a clickable surface — a Link
+  // (navigates) or a clickable row (onClick). stopPropagation alone can't stop
+  // a parent <a>, because the anchor navigates via the browser's default
+  // action, which only preventDefault cancels. But preventDefault would also
+  // suppress Radix's built-in open-on-click (it's gated on !defaultPrevented),
+  // so we toggle open ourselves instead of relying on it.
+  const [open, setOpen] = useState(false);
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
           type="button"
           aria-label={resolvedTitle ? `Explain: ${resolvedTitle}` : "Explain"}
-          // Stop the click from triggering a parent (e.g. a clickable table
-          // row). type="button" already prevents host-form submission.
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setOpen((o) => !o);
+          }}
           className={cn(
             "inline-flex size-4 shrink-0 items-center justify-center rounded-full align-middle text-muted-foreground/70 transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
             className,

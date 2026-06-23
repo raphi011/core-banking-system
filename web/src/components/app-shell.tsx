@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ParticipantSwitcher } from "./participant-switcher";
+import { ThemeToggle } from "./theme-toggle";
 
 interface NavItem {
   href: string;
@@ -127,8 +128,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
           <span className="font-semibold md:hidden">Ledger</span>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
             <ParticipantSwitcher />
+            <ThemeToggle />
           </div>
         </header>
 

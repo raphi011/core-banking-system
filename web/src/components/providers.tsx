@@ -1,13 +1,16 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { useState } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
 
-// App-wide client providers: TanStack Query for server state, sonner for toasts.
-// The QueryClient is created once per client via useState so it survives
-// re-renders but isn't shared across requests on the server.
+// App-wide client providers: next-themes for light/dark, TanStack Query for
+// server state, sonner for toasts. ThemeProvider is outermost because the
+// Toaster reads the active theme via useTheme(). The QueryClient is created
+// once per client via useState so it survives re-renders but isn't shared
+// across requests on the server.
 export function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(
     () =>
@@ -25,9 +28,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <QueryClientProvider client={client}>
-      {children}
-      <Toaster richColors closeButton />
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <QueryClientProvider client={client}>
+        {children}
+        <Toaster richColors closeButton />
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
