@@ -2,8 +2,9 @@
 
 Make both the **left nav** and the **right concept rail** resizable by dragging,
 using shadcn's `resizable` component (wraps `react-resizable-panels`). Sizes
-persist across reloads. The right rail keeps its existing collapse-to-strip
-behavior; the left nav is **resize-only** (not collapsible).
+persist across reloads. Both panels are **collapsible**: the right rail keeps its
+existing collapse-to-strip behavior; the left nav collapses to an **icons-only
+rail** (links stay navigable as centered icons with tooltips).
 
 Branch: `claude/resizable-sidebars` (off `main`).
 
@@ -34,7 +35,7 @@ three panels separated by two handles:
 
 | Panel (id, order) | Content | default | min | max | collapsible |
 |---|---|---|---|---|---|
-| `nav` (1) | Brand + NavLinks + ResetButton | 240px | 200px | 360px | no |
+| `nav` (1) | Brand + NavLinks + ResetButton | 240px | 200px | 360px | yes, `collapsedSize` 56px (icons-only) |
 | `main` (2) | header (topbar) + `<main>` | fills | 480px | — | no |
 | `concepts` (3) | ConceptPanelBody / collapsed strip | 320px | 256px | 640px | yes, `collapsedSize` 32px |
 
@@ -67,6 +68,17 @@ three panels separated by two handles:
      panel when collapsed (drive off provider `collapsed`).
    Keep `concept-panel-collapsed` as the collapse source of truth (so
    `openConcept`/`togglePanel` keep working unchanged).
+3. **Left-nav collapse (icons-only).** New, simpler than the rail (no programmatic
+   reveal). A generic `useCollapsed(storageKey)` hook (localStorage +
+   `useSyncExternalStore` + a custom event, mirroring the provider's collapse
+   plumbing) backs key `nav-panel-collapsed`. Bridge it to the `nav` panel's
+   imperative ref the same way (effect drives `collapse()/expand()`;
+   `onCollapse/onExpand` write the hook). When collapsed, `NavLinks` render
+   icon-only: centered `<Icon>`, `title={label}` + `aria-label` for a tooltip
+   (no shadcn `tooltip` dependency), active highlight preserved; `Brand` shows the
+   mark only; `ResetButton` renders icon-only. A toggle button (`PanelLeftClose` /
+   `PanelLeftOpen`) sits at the nav footer; dragging below `minSize` also collapses
+   it (library behavior).
 
 ## Persistence
 
@@ -83,9 +95,12 @@ three panels separated by two handles:
   `react-resizable-panels`).
 - **add** `src/components/use-is-desktop.ts` — `matchMedia` store via
   `useSyncExternalStore` (snapshot=false on server).
+- **add** `src/components/use-collapsed.ts` — generic `useCollapsed(storageKey)`
+  (localStorage + `useSyncExternalStore` + custom event) for the left-nav collapse.
 - **edit** `src/components/app-shell.tsx` — split into `DesktopShell` (PanelGroup)
-  + `MobileShell`; responsive switch; concepts panel ref + collapse bridge;
-  restyle handle.
+  + `MobileShell`; responsive switch; nav + concepts panel refs + collapse bridges;
+  icons-only `NavLinks`/`Brand`/`ResetButton` collapsed states; nav collapse
+  toggle; restyle handles.
 - **edit (maybe)** `src/components/concept-panel-provider.tsx` — only if the
   collapse bridge needs an extra hook; prefer keeping the bridge in `app-shell`.
 
@@ -117,13 +132,14 @@ Manual checks:
    rail resizes within 256–640px.
 2. Collapse the rail (existing button) → strip shows; expand restores width.
    Dragging the rail below its min collapses it; `?`/concept links re-expand it.
-3. Reload → both panel widths (and collapse) restored.
-4. Shrink viewport below `md` → sidebars give way to the Menu/BookOpen Sheets;
+3. Collapse the left nav (toggle) → icons-only rail; links still navigate (tooltips
+   on hover), active item highlighted; toggle/drag re-expands.
+4. Reload → both panel widths and both collapse states restored.
+5. Shrink viewport below `md` → sidebars give way to the Menu/BookOpen Sheets;
    no layout errors. Grow back → panels return.
-5. Dark mode + handle styling match the existing minimal aesthetic.
+6. Dark mode + handle styling match the existing minimal aesthetic.
 
-## Open choice to confirm
+## Decisions locked
 
-Left nav is planned **resize-only**. If a collapsible left nav (to an icons-only
-or strip state) is wanted, say so — it adds a second collapse bridge but is
-straightforward.
+- Both panels resizable + **collapsible**. Left nav collapses to **icons-only**
+  (56px), right rail to its **strip** (32px). Confirmed with the user.
