@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useSyncExternalStore,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -13,6 +14,27 @@ import type { HintKey } from "./hint-content";
 import { validateConceptContent } from "./concept-links";
 
 const STORAGE_KEY = "concept-panel-collapsed";
+const COLLAPSE_EVENT = "concept-panel-collapsed-change";
+
+// Collapse preference is an external store (localStorage). Reading it via
+// useSyncExternalStore keeps hydration safe and avoids a synchronous setState
+// inside an effect.
+function subscribeCollapsed(callback: () => void): () => void {
+  window.addEventListener("storage", callback);
+  window.addEventListener(COLLAPSE_EVENT, callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(COLLAPSE_EVENT, callback);
+  };
+}
+
+function getCollapsedSnapshot(): boolean {
+  return localStorage.getItem(STORAGE_KEY) === "true";
+}
+
+function getCollapsedServerSnapshot(): boolean {
+  return false;
+}
 
 interface ConceptPanelContextValue {
   defaultConcept: HintKey | null;
@@ -44,13 +66,12 @@ export function ConceptPanelProvider({
   const router = useRouter();
   const pathname = usePathname();
   const [defaultConcept, setDefaultConcept] = useState<HintKey | null>(null);
-  const [collapsed, setCollapsedState] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  // Hydrate collapse preference after mount to avoid an SSR/client mismatch.
-  useEffect(() => {
-    setCollapsedState(localStorage.getItem(STORAGE_KEY) === "true");
-  }, []);
+  const collapsed = useSyncExternalStore(
+    subscribeCollapsed,
+    getCollapsedSnapshot,
+    getCollapsedServerSnapshot,
+  );
 
   // Fail loudly in dev if any concept body links to an unknown key.
   useEffect(() => {
@@ -58,8 +79,8 @@ export function ConceptPanelProvider({
   }, []);
 
   const setCollapsed = useCallback((next: boolean) => {
-    setCollapsedState(next);
     localStorage.setItem(STORAGE_KEY, String(next));
+    window.dispatchEvent(new Event(COLLAPSE_EVENT));
   }, []);
 
   // Read live params from the URL in the handler (not during render) so we

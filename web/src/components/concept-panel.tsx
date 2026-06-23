@@ -27,7 +27,7 @@ export function ConceptPanelBody({ onCollapse }: { onCollapse?: () => void }) {
   if (!active) {
     return (
       <div className="p-4 text-sm text-muted-foreground">
-        Select a "?" to see an explanation here.
+        Select a “?” to see an explanation here.
       </div>
     );
   }
