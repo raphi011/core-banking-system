@@ -34,7 +34,7 @@ func (s *Server) handleCreateMandate(w http.ResponseWriter, r *http.Request) {
 		writeBadRequest(w, err.Error())
 		return
 	}
-	m, err := s.net.CreateMandate(req.Debtor.toDomain(), req.Creditor.toDomain(), req.MaxAmount)
+	m, err := s.network().CreateMandate(req.Debtor.toDomain(), req.Creditor.toDomain(), req.MaxAmount)
 	if err != nil {
 		writeError(w, err)
 		return
@@ -43,7 +43,7 @@ func (s *Server) handleCreateMandate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleListMandates(w http.ResponseWriter, r *http.Request) {
-	mandates := s.net.ListMandates()
+	mandates := s.network().ListMandates()
 	out := make([]mandateDTO, len(mandates))
 	for i, m := range mandates {
 		out[i] = toMandateDTO(m)
@@ -52,7 +52,7 @@ func (s *Server) handleListMandates(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleGetMandate(w http.ResponseWriter, r *http.Request) {
-	m, err := s.net.GetMandate(payment.MandateID(r.PathValue("mid")))
+	m, err := s.network().GetMandate(payment.MandateID(r.PathValue("mid")))
 	if err != nil {
 		writeError(w, err)
 		return
@@ -61,11 +61,11 @@ func (s *Server) handleGetMandate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleRevokeMandate(w http.ResponseWriter, r *http.Request) {
-	if err := s.net.RevokeMandate(payment.MandateID(r.PathValue("mid"))); err != nil {
+	if err := s.network().RevokeMandate(payment.MandateID(r.PathValue("mid"))); err != nil {
 		writeError(w, err)
 		return
 	}
-	m, err := s.net.GetMandate(payment.MandateID(r.PathValue("mid")))
+	m, err := s.network().GetMandate(payment.MandateID(r.PathValue("mid")))
 	if err != nil {
 		writeError(w, err)
 		return
@@ -79,7 +79,7 @@ func (s *Server) handleInitiatePayment(w http.ResponseWriter, r *http.Request) {
 		writeBadRequest(w, err.Error())
 		return
 	}
-	p, err := s.net.InitiatePayment(req.toDomain())
+	p, err := s.network().InitiatePayment(req.toDomain())
 	if err != nil {
 		writeError(w, err)
 		return
@@ -88,7 +88,7 @@ func (s *Server) handleInitiatePayment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleListPayments(w http.ResponseWriter, r *http.Request) {
-	payments := s.net.ListPayments()
+	payments := s.network().ListPayments()
 	out := make([]paymentDTO, len(payments))
 	for i, p := range payments {
 		out[i] = toPaymentDTO(p)
@@ -97,7 +97,7 @@ func (s *Server) handleListPayments(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleGetPayment(w http.ResponseWriter, r *http.Request) {
-	p, err := s.net.GetPayment(payment.PaymentID(r.PathValue("payid")))
+	p, err := s.network().GetPayment(payment.PaymentID(r.PathValue("payid")))
 	if err != nil {
 		writeError(w, err)
 		return
@@ -111,7 +111,7 @@ func (s *Server) handleRejectPayment(w http.ResponseWriter, r *http.Request) {
 		writeBadRequest(w, err.Error())
 		return
 	}
-	p, err := s.net.RejectPayment(payment.PaymentID(r.PathValue("payid")), req.Reason)
+	p, err := s.network().RejectPayment(payment.PaymentID(r.PathValue("payid")), req.Reason)
 	if err != nil {
 		writeError(w, err)
 		return
@@ -125,7 +125,7 @@ func (s *Server) handleReturnPayment(w http.ResponseWriter, r *http.Request) {
 		writeBadRequest(w, err.Error())
 		return
 	}
-	p, err := s.net.ReturnPayment(payment.PaymentID(r.PathValue("payid")), req.Reason)
+	p, err := s.network().ReturnPayment(payment.PaymentID(r.PathValue("payid")), req.Reason)
 	if err != nil {
 		writeError(w, err)
 		return
@@ -139,7 +139,7 @@ func (s *Server) handleOpenCycle(w http.ResponseWriter, r *http.Request) {
 		writeBadRequest(w, err.Error())
 		return
 	}
-	c, err := s.net.OpenCycle(payment.SchemeID(req.Scheme))
+	c, err := s.network().OpenCycle(payment.SchemeID(req.Scheme))
 	if err != nil {
 		writeError(w, err)
 		return
@@ -148,7 +148,7 @@ func (s *Server) handleOpenCycle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleListCycles(w http.ResponseWriter, r *http.Request) {
-	cycles := s.net.ListCycles()
+	cycles := s.network().ListCycles()
 	out := make([]clearingCycleDTO, len(cycles))
 	for i, c := range cycles {
 		out[i] = toClearingCycleDTO(c)
@@ -157,7 +157,7 @@ func (s *Server) handleListCycles(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleGetCycle(w http.ResponseWriter, r *http.Request) {
-	c, err := s.net.GetCycle(payment.CycleID(r.PathValue("cid")))
+	c, err := s.network().GetCycle(payment.CycleID(r.PathValue("cid")))
 	if err != nil {
 		writeError(w, err)
 		return
@@ -166,7 +166,7 @@ func (s *Server) handleGetCycle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleCloseCycle(w http.ResponseWriter, r *http.Request) {
-	c, err := s.net.CloseCycle(payment.CycleID(r.PathValue("cid")))
+	c, err := s.network().CloseCycle(payment.CycleID(r.PathValue("cid")))
 	if err != nil {
 		writeError(w, err)
 		return
@@ -175,7 +175,7 @@ func (s *Server) handleCloseCycle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleSettleCycle(w http.ResponseWriter, r *http.Request) {
-	settlement, err := s.net.SettleCycle(payment.CycleID(r.PathValue("cid")))
+	settlement, err := s.network().SettleCycle(payment.CycleID(r.PathValue("cid")))
 	if err != nil {
 		writeError(w, err)
 		return
@@ -184,7 +184,7 @@ func (s *Server) handleSettleCycle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleListSettlements(w http.ResponseWriter, r *http.Request) {
-	settlements := s.net.ListSettlements()
+	settlements := s.network().ListSettlements()
 	out := make([]settlementDTO, len(settlements))
 	for i, st := range settlements {
 		out[i] = toSettlementDTO(st)
@@ -193,7 +193,7 @@ func (s *Server) handleListSettlements(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleGetSettlement(w http.ResponseWriter, r *http.Request) {
-	st, err := s.net.GetSettlement(payment.SettlementID(r.PathValue("sid")))
+	st, err := s.network().GetSettlement(payment.SettlementID(r.PathValue("sid")))
 	if err != nil {
 		writeError(w, err)
 		return

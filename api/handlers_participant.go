@@ -26,7 +26,7 @@ func (s *Server) handleAddParticipant(w http.ResponseWriter, r *http.Request) {
 		writeBadRequest(w, err.Error())
 		return
 	}
-	p, err := s.net.AddParticipant(req.Name)
+	p, err := s.network().AddParticipant(req.Name)
 	if err != nil {
 		writeError(w, err)
 		return
@@ -35,7 +35,7 @@ func (s *Server) handleAddParticipant(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleListParticipants(w http.ResponseWriter, r *http.Request) {
-	parts := s.net.ListParticipants()
+	parts := s.network().ListParticipants()
 	out := make([]participantDTO, len(parts))
 	for i, p := range parts {
 		out[i] = toParticipantDTO(p)
@@ -61,7 +61,7 @@ func (s *Server) handleFundDeposit(w http.ResponseWriter, r *http.Request) {
 		writeBadRequest(w, err.Error())
 		return
 	}
-	if err := s.net.Deposit(p.ID, deposit.AccountID(req.Account), req.Amount, req.Description); err != nil {
+	if err := s.network().Deposit(p.ID, deposit.AccountID(req.Account), req.Amount, req.Description); err != nil {
 		writeError(w, err)
 		return
 	}
@@ -74,7 +74,7 @@ func (s *Server) handleFundDeposit(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleListSchemes(w http.ResponseWriter, r *http.Request) {
-	schemes := s.net.ListSchemes()
+	schemes := s.network().ListSchemes()
 	out := make([]schemeDTO, len(schemes))
 	for i, sc := range schemes {
 		out[i] = toSchemeDTO(sc)
@@ -83,10 +83,10 @@ func (s *Server) handleListSchemes(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleListReserves(w http.ResponseWriter, r *http.Request) {
-	parts := s.net.ListParticipants()
+	parts := s.network().ListParticipants()
 	out := make([]reserveDTO, 0, len(parts))
 	for _, p := range parts {
-		bal, err := s.net.ReserveBalance(p.ID)
+		bal, err := s.network().ReserveBalance(p.ID)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -98,7 +98,7 @@ func (s *Server) handleListReserves(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleGetReserve(w http.ResponseWriter, r *http.Request) {
 	pid := payment.ParticipantID(r.PathValue("pid"))
-	bal, err := s.net.ReserveBalance(pid)
+	bal, err := s.network().ReserveBalance(pid)
 	if err != nil {
 		writeError(w, err)
 		return
@@ -107,7 +107,7 @@ func (s *Server) handleGetReserve(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleCentralBankAudit(w http.ResponseWriter, r *http.Request) {
-	events := s.net.CentralBank().GetAuditLog()
+	events := s.network().CentralBank().GetAuditLog()
 	out := make([]auditEventDTO, len(events))
 	for i, e := range events {
 		out[i] = toLedgerAuditDTO(e)

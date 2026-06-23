@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -17,9 +18,11 @@ var fixedTime = time.Date(2025, 1, 15, 12, 0, 0, 0, time.UTC)
 
 func newTestServer(t *testing.T) http.Handler {
 	t.Helper()
-	net := payment.NewNetworkWithClock(func() time.Time { return fixedTime })
+	newState := func() *payment.Network {
+		return payment.NewNetworkWithClock(func() time.Time { return fixedTime })
+	}
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
-	return NewServer(net, log).Routes()
+	return NewServer(newState, log).Routes()
 }
 
 // do runs a request through the handler and returns the recorder.
@@ -169,4 +172,27 @@ func TestErrorMapping(t *testing.T) {
 	// 400: invalid enum value.
 	assertStatus(t, h, "POST", "/participants/"+pid+"/subledgers/"+slid+"/accounts",
 		`{"name":"Bad","type":"Nonsense"}`, http.StatusBadRequest)
+}
+
+func TestAdminReset(t *testing.T) {
+	h := newTestServer(t)
+
+	// emptyList reports whether the /participants body is the empty array.
+	emptyList := func() bool {
+		b := strings.TrimSpace(do(t, h, "GET", "/participants", "").Body.String())
+		return b == "[]"
+	}
+
+	// Create a participant, confirm it's present.
+	doJSON(t, h, "POST", "/participants", `{"name":"Bank A"}`, http.StatusCreated)
+	if emptyList() {
+		t.Fatal("expected one participant before reset, got empty list")
+	}
+
+	// Reset rebuilds state from the factory (empty in tests).
+	doJSON(t, h, "POST", "/admin/reset", "", http.StatusOK)
+
+	if !emptyList() {
+		t.Fatal("expected empty participants after reset")
+	}
 }
