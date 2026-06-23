@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -11,6 +12,8 @@ import {
   Network,
   RefreshCw,
   Landmark,
+  BookOpen,
+  PanelRightOpen,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -19,6 +22,11 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { Button } from "@/components/ui/button";
 import { ParticipantSwitcher } from "./participant-switcher";
 import { ThemeToggle } from "./theme-toggle";
+import {
+  ConceptPanelProvider,
+  useConceptPanel,
+} from "./concept-panel-provider";
+import { ConceptPanelBody } from "./concept-panel";
 
 interface NavItem {
   href: string;
@@ -26,8 +34,6 @@ interface NavItem {
   icon: LucideIcon;
 }
 
-// Network-wide screens (no participant selected). Payments, mandates, cycles
-// and settlements are global because each spans two participants.
 const NETWORK_NAV: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/payments", label: "Payments", icon: ArrowLeftRight },
@@ -84,7 +90,64 @@ function ResetNote() {
   );
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+// Desktop right rail: full panel when expanded, a thin clickable strip when
+// collapsed. Hidden below md (the mobile sheet takes over).
+function ConceptRail() {
+  const { collapsed, setCollapsed } = useConceptPanel();
+
+  if (collapsed) {
+    return (
+      <button
+        type="button"
+        onClick={() => setCollapsed(false)}
+        aria-label="Expand concept panel"
+        className="hidden w-8 shrink-0 flex-col items-center gap-2 border-l bg-card py-3 text-muted-foreground hover:text-foreground md:flex"
+      >
+        <PanelRightOpen className="size-4" />
+        <span className="[writing-mode:vertical-rl] text-xs">Concepts</span>
+      </button>
+    );
+  }
+
+  return (
+    <aside className="hidden w-80 shrink-0 flex-col border-l bg-card md:flex">
+      <Suspense fallback={null}>
+        <ConceptPanelBody onCollapse={() => setCollapsed(true)} />
+      </Suspense>
+    </aside>
+  );
+}
+
+// Mobile sheet: same body, opened by the topbar trigger or any `?`/link.
+function ConceptSheet() {
+  const { mobileOpen, setMobileOpen } = useConceptPanel();
+  return (
+    <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+      <SheetContent side="right" className="w-full max-w-sm p-0 md:hidden">
+        <SheetTitle className="sr-only">Concept explanation</SheetTitle>
+        <Suspense fallback={null}>
+          <ConceptPanelBody />
+        </Suspense>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function ConceptTrigger() {
+  const { togglePanel } = useConceptPanel();
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label="Open concepts"
+      onClick={togglePanel}
+    >
+      <BookOpen className="size-5" />
+    </Button>
+  );
+}
+
+function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       {/* Desktop sidebar */}
@@ -101,7 +164,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Topbar: mobile nav drawer (small screens) + participant switcher */}
         <header className="flex h-14 items-center gap-2 border-b px-4">
           <Sheet>
             <SheetTrigger asChild>
@@ -130,12 +192,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="font-semibold md:hidden">Ledger</span>
           <div className="ml-auto flex items-center gap-2">
             <ParticipantSwitcher />
+            <ConceptTrigger />
             <ThemeToggle />
           </div>
         </header>
 
         <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
       </div>
+
+      <ConceptRail />
+      <ConceptSheet />
     </div>
+  );
+}
+
+export function AppShell({ children }: { children: React.ReactNode }) {
+  return (
+    <ConceptPanelProvider>
+      <Shell>{children}</Shell>
+    </ConceptPanelProvider>
   );
 }
