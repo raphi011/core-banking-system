@@ -1,137 +1,181 @@
 # Handoff — Resizable sidebars (shadcn resizable panels)
 
 Make both the **left nav** and the **right concept rail** resizable by dragging,
-using shadcn's `resizable` component (wraps `react-resizable-panels`). Sizes
+using shadcn's `resizable` component (wraps `react-resizable-panels` v4). Sizes
 persist across reloads. Both panels are **collapsible**: the right rail keeps its
 existing collapse-to-strip behavior; the left nav collapses to an **icons-only
 rail** (links stay navigable as centered icons with tooltips).
 
-Branch: `claude/resizable-sidebars` (off `main`).
+This doc is self-sufficient: a fresh context can implement from here alone.
+
+## Current state / progress
+
+- Branch: `claude/resizable-sidebars` (off `main`).
+- **Done & committed:**
+  - This handoff (`web/HANDOFF-resizable-sidebars.md`).
+  - `web/src/components/ui/resizable.tsx` — shadcn wrapper — and
+    `react-resizable-panels ^4.11.2` added to `package.json`/`package-lock.json`
+    (public npm registry; verified no Artifactory URLs). Commit `a254990`.
+- **Remaining work:**
+  1. add `web/src/components/use-is-desktop.ts`;
+  2. rewrite `web/src/components/app-shell.tsx` (DesktopShell PanelGroup +
+     MobileShell + collapse bridges + icons-only nav).
+  - `web/src/components/concept-panel-provider.tsx` needs **no change** (see wiring).
+- Run / verify:
+  ```bash
+  go run ./cmd/server            # backend, repo root, :8080
+  cd web && npm run dev          # http://localhost:3000
+  npm run typecheck && npm run lint && npm run build   # all must be clean
+  ```
 
 ## Decision
 
-Chosen approach: **shadcn `resizable`** (not the custom drag-handle hook).
-Rationale: we want *two* resizable panels now (left + right) and may add more
-split views later; the library gives keyboard-accessible, ARIA-instrumented
-handles and a real layout engine. v4 supports **pixel** sizing, which removes the
-old percentage-only blocker.
+Chosen approach: **shadcn `resizable`** (not a custom drag-handle hook). We want
+two resizable panels now (left + right) and may add split views later; the
+library gives keyboard-accessible, ARIA-instrumented handles and a real layout
+engine, and v4 supports **pixel** sizing (the old percentage-only blocker is gone).
 
-Verified facts (June 2026):
-- `react-resizable-panels` latest **4.11.2**, **zero runtime deps**, peer
-  `react ^18 || ^19` → our React 19.2.4 is fine.
-- **Size units:** a *numeric* `minSize={256}` means **256px**; unit-less strings
-  are percentages; `px/%/em/rem/vh/vw` all accepted.
-- **Collapsible:** `collapsible` + `collapsedSize` (px ok) + imperative ref
-  (`collapse/expand/isCollapsed/resize/getSize`).
-- shadcn component: `npx shadcn@latest add resizable` → `src/components/ui/resizable.tsx`
-  exporting `ResizablePanelGroup` / `ResizablePanel` / `ResizableHandle`
-  (`withHandle` shows a grip; group takes `orientation="horizontal"`). Confirm the
-  generated prop names against the installed version after running the CLI.
+## Installed v4 API (authoritative — verified against `node_modules` types)
+
+Import the shadcn wrappers from `@/components/ui/resizable`:
+`ResizablePanelGroup` (→ rrp `Group`), `ResizablePanel` (→ `Panel`),
+`ResizableHandle` with optional `withHandle` (→ `Separator`). The imperative
+hooks come from `react-resizable-panels` directly: `usePanelRef`, `useGroupRef`.
+
+- **Sizes:** a **numeric value = pixels** (`minSize={256}` ⇒ 256px). Unit-less
+  strings = percent; `px/%/em/rem/vh/vw` accepted. `PanelSize = { asPercentage:
+  number; inPixels: number }`.
+- **`ResizablePanelGroup`** (GroupProps): `orientation="horizontal"`,
+  `defaultLayout`, `onLayoutChanged` (fires after pointer release — use for
+  saving), `onLayoutChange` (fires every move), `groupRef`, `id`, `disabled`.
+- **`ResizablePanel`** (PanelProps): `id`, `collapsible`, `collapsedSize`,
+  `defaultSize`, `minSize`, `maxSize`, `panelRef`, `onResize(panelSize, id, prev)`,
+  `disabled`. ⚠️ **No `order` prop. No `onCollapse`/`onExpand`.**
+- **Imperative handle** `PanelImperativeHandle` (via `panelRef` / `usePanelRef()`):
+  `collapse()`, `expand()`, `isCollapsed()`, `getSize()`, `resize(size)`. Group
+  handle (`useGroupRef()`): `getLayout()`, `setLayout()`.
+- **Collapse semantics:** a `collapsible` panel collapses to `collapsedSize` when
+  dragged below `minSize`. There is **no collapse event** — detect via `onResize`
+  (`panelSize.inPixels <= collapsedSize`) or `panelRef.current?.isCollapsed()`.
+- **Persistence:** **no `autoSaveId`.** Use
+  `useDefaultLayout({ id, panelIds, storage? })` → `{ defaultLayout,
+  onLayoutChanged }`; spread both onto `ResizablePanelGroup`. Default storage is
+  `localStorage`; SSR-safe (returns `undefined` defaultLayout on the server).
+  `panelIds` must match the rendered panel ids.
 
 ## Target architecture
 
 One horizontal `ResizablePanelGroup` (id `app-shell`) spanning the desktop width,
 three panels separated by two handles:
 
-| Panel (id, order) | Content | default | min | max | collapsible |
+| Panel (id) | Content | default | min | max | collapsible |
 |---|---|---|---|---|---|
-| `nav` (1) | Brand + NavLinks + ResetButton | 240px | 200px | 360px | yes, `collapsedSize` 56px (icons-only) |
-| `main` (2) | header (topbar) + `<main>` | fills | 480px | — | no |
-| `concepts` (3) | ConceptPanelBody / collapsed strip | 320px | 256px | 640px | yes, `collapsedSize` 32px |
+| `nav` | Brand + NavLinks + ResetButton | 240px | 200px | 360px | yes, `collapsedSize={56}` (icons-only) |
+| `main` | header (topbar) + `<main>` | fills | 480px | — | no |
+| `concepts` | ConceptPanelBody / collapsed strip | 320px | 256px | 640px | yes, `collapsedSize={32}` |
 
-- `ResizableHandle withHandle` between nav|main and main|concepts, restyled to the
-  existing subtle border aesthetic (`border-l`/`border-r` + hover highlight) — do
-  not introduce a new look (`web/CLAUDE.md`).
+## Decided wiring (do exactly this)
 
-## The two real integration costs
+- **Size persistence:**
+  `const { defaultLayout, onLayoutChanged } = useDefaultLayout({ id: "app-shell",
+  panelIds: ["nav", "main", "concepts"] })`, then
+  `<ResizablePanelGroup orientation="horizontal" defaultLayout={defaultLayout}
+  onLayoutChanged={onLayoutChanged}>`. Persists all three sizes (incl. collapsed
+  sizes) to localStorage.
+- **Responsive gating:** `useIsDesktop()` (`matchMedia('(min-width: 768px)')` via
+  `useSyncExternalStore`, **server snapshot = false**). Render `<DesktopShell/>`
+  only when desktop, else `<MobileShell/>`. The PanelGroup therefore never renders
+  on the server (no SSR layout shift) and never on hidden panels (rrp mis-measures
+  those — this is why we can't just CSS-hide it).
+- **Concepts rail collapse — keep the provider as source of truth; do NOT refactor
+  the provider:**
+  - `const conceptRef = usePanelRef()`;
+    `<ResizablePanel id="concepts" collapsible collapsedSize={32} minSize={256}
+    maxSize={640} defaultSize={320} panelRef={conceptRef} onResize={…}>`.
+  - Effect (deps `[collapsed]`): if `collapsed && !conceptRef.current?.isCollapsed()`
+    → `conceptRef.current?.collapse()`; else if
+    `!collapsed && conceptRef.current?.isCollapsed()` → `…expand()`.
+  - `onResize={(s) => { const c = s.inPixels <= 40; if (c !== collapsed)
+    setCollapsed(c); }}` (uses provider `setCollapsed`; the `!==` guard prevents
+    loops).
+  - Render the collapsed strip (vertical “Concepts” + expand button) vs
+    `<ConceptPanelBody onCollapse={() => setCollapsed(true)} />` off `collapsed`.
+  - `openConcept`/`togglePanel`/`revealPanel` already call `setCollapsed(false)` on
+    desktop → the effect expands the panel. Unchanged.
+- **Left nav collapse — local to DesktopShell; persisted via the layout (no extra
+  storage):**
+  - `const [navCollapsed, setNavCollapsed] = useState(false)`;
+    `const navRef = usePanelRef()`;
+    `<ResizablePanel id="nav" collapsible collapsedSize={56} minSize={200}
+    maxSize={360} defaultSize={240} panelRef={navRef}
+    onResize={(s) => { const c = s.inPixels <= 64; if (c !== navCollapsed)
+    setNavCollapsed(c); }}>`.
+  - Footer toggle button: `navCollapsed ? navRef.current?.expand() :
+    navRef.current?.collapse()` (icons `PanelLeftOpen` / `PanelLeftClose`).
+  - When `navCollapsed`: `NavLinks` render icon-only (centered `<Icon>`,
+    `title={label}` + `aria-label` for a native tooltip — **no shadcn `tooltip`
+    dependency**, active highlight kept); `Brand` shows the mark only; `ResetButton`
+    renders icon-only. `useDefaultLayout` restores the nav’s collapsed size on
+    reload and `onResize` then sets `navCollapsed` (a one-frame expanded flash is
+    acceptable). **No `nav-panel-collapsed` key / `use-collapsed.ts` needed.**
+- **Handles:** `<ResizableHandle withHandle />` between nav|main and main|concepts;
+  the shadcn default already uses `bg-border` — keep it subtle per `web/CLAUDE.md`,
+  no new aesthetic.
 
-1. **Responsive gating (JS, not CSS).** Today both sidebars use CSS
-   (`hidden md:flex`); the mobile layout uses Sheets (Menu → nav, BookOpen →
-   concepts). `react-resizable-panels` measures pixels and **mis-measures hidden
-   panels**, so the PanelGroup must render **only at `md+`**, switched by a
-   `matchMedia('(min-width: 768px)')` store (mounted-safe, mirrors the provider's
-   `DESKTOP_QUERY`). Plan:
-   - `DesktopShell` = the `ResizablePanelGroup` (nav | main | concepts).
-   - `MobileShell` = the center column only (header + `<main>`); nav and concepts
-     come from the existing Sheets in the header.
-   - Server snapshot returns **mobile** (desktop=false) to keep SSR deterministic;
-     swap to desktop after mount. Accept a one-frame flash on desktop, or hide the
-     shell until mounted — note the tradeoff, pick the smaller flash.
-2. **Collapse reconciliation.** Collapse state currently lives in the provider +
-   `localStorage` (`concept-panel-collapsed`) and is driven programmatically
-   (`openConcept`/`togglePanel` reveal the rail). Bridge it to the concepts panel:
-   - Hold a `ref<ImperativePanelHandle>` on the concepts `ResizablePanel`.
-   - Effect: when provider `collapsed` changes, call `ref.collapse()` /
-     `ref.expand()` (guard with `ref.isCollapsed()` to avoid loops).
-   - `onCollapse`/`onExpand` on the panel call `setCollapsed(true/false)`.
-   - Render the collapsed strip UI (vertical "Concepts" + expand button) inside the
-     panel when collapsed (drive off provider `collapsed`).
-   Keep `concept-panel-collapsed` as the collapse source of truth (so
-   `openConcept`/`togglePanel` keep working unchanged).
-3. **Left-nav collapse (icons-only).** New, simpler than the rail (no programmatic
-   reveal). A generic `useCollapsed(storageKey)` hook (localStorage +
-   `useSyncExternalStore` + a custom event, mirroring the provider's collapse
-   plumbing) backs key `nav-panel-collapsed`. Bridge it to the `nav` panel's
-   imperative ref the same way (effect drives `collapse()/expand()`;
-   `onCollapse/onExpand` write the hook). When collapsed, `NavLinks` render
-   icon-only: centered `<Icon>`, `title={label}` + `aria-label` for a tooltip
-   (no shadcn `tooltip` dependency), active highlight preserved; `Brand` shows the
-   mark only; `ResetButton` renders icon-only. A toggle button (`PanelLeftClose` /
-   `PanelLeftOpen`) sits at the nav footer; dragging below `minSize` also collapses
-   it (library behavior).
+## Provider consumer map (don’t break these)
 
-## Persistence
+`useConceptPanel()` consumers:
+- `openConcept` → `hint.tsx`, `concept-markdown.tsx`, `concept-panel.tsx`
+- `setDefaultConcept` → `page-header.tsx`
+- `collapsed` / `setCollapsed` / `mobileOpen` / `setMobileOpen` / `togglePanel`
+  → `app-shell.tsx` only
+- `ConceptPanelBody({ onCollapse })` lives in `concept-panel.tsx`.
 
-- **Sizes:** prefer the library's built-in persistence if the installed v4 exposes
-  it (`autoSaveId="app-shell-layout"` on the group). If v4 dropped it, persist via
-  `onLayout(sizes) → localStorage["app-shell-layout"]` and restore through each
-  panel's `defaultSize`. Confirm which exists by reading the generated
-  `resizable.tsx` / `node_modules/react-resizable-panels` types.
-- **Collapse:** unchanged — provider + `concept-panel-collapsed`.
+Keep the `useConceptPanel()` interface (and the `concept-panel-collapsed`
+localStorage behavior) exactly as-is.
 
-## Files
+## Layout sketch (app-shell.tsx after rewrite)
 
-- **add** `src/components/ui/resizable.tsx` (shadcn CLI; also installs
-  `react-resizable-panels`).
-- **add** `src/components/use-is-desktop.ts` — `matchMedia` store via
-  `useSyncExternalStore` (snapshot=false on server).
-- **add** `src/components/use-collapsed.ts` — generic `useCollapsed(storageKey)`
-  (localStorage + `useSyncExternalStore` + custom event) for the left-nav collapse.
-- **edit** `src/components/app-shell.tsx` — split into `DesktopShell` (PanelGroup)
-  + `MobileShell`; responsive switch; nav + concepts panel refs + collapse bridges;
-  icons-only `NavLinks`/`Brand`/`ResetButton` collapsed states; nav collapse
-  toggle; restyle handles.
-- **edit (maybe)** `src/components/concept-panel-provider.tsx` — only if the
-  collapse bridge needs an extra hook; prefer keeping the bridge in `app-shell`.
+```
+AppShell → ConceptPanelProvider → Shell
+Shell: const desktop = useIsDesktop(); return desktop ? <DesktopShell> : <MobileShell>
+DesktopShell:
+  ResizablePanelGroup(orientation=horizontal, defaultLayout, onLayoutChanged)
+    ResizablePanel#nav (collapsible, navRef, onResize→navCollapsed)
+       NavSidebar(collapsed=navCollapsed, onToggle)   // Brand + NavLinks + ResetButton + toggle
+    ResizableHandle withHandle
+    ResizablePanel#main (minSize 480)
+       Header(no Menu button on desktop) + <main>{children}</main>
+    ResizableHandle withHandle
+    ResizablePanel#concepts (collapsible, conceptRef, onResize→setCollapsed)
+       collapsed ? <ConceptStrip onExpand> : <ConceptPanelBody onCollapse>
+  + <ConceptSheet/> stays (harmless on desktop; it’s md:hidden)
+MobileShell:  // current behavior
+  Header(with Menu Sheet → nav, BookOpen → concepts) + <main>{children}</main>
+  + <ConceptSheet/>
+```
+The header’s desktop vs mobile bits already use `md:hidden`; keep the mobile nav
+`Sheet` (Menu) and the `ConceptTrigger` (BookOpen) for `MobileShell`.
 
 ## Gotchas
 
-- v4 numeric sizes = **pixels** (not percent). Don't pass `256` expecting 256%.
-- PanelGroup mis-measures hidden panels → gate by JS media query, never CSS `hidden`.
-- Each panel needs a stable `id`/`order` for persistence to associate correctly.
-- shadcn CLI here runs under **npm** (not pnpm): `npx shadcn@latest add resizable`.
-  Verify the generated component's prop names (`orientation` vs `direction`,
-  `withHandle`) against what shipped.
-- Avoid a hydration mismatch: the PanelGroup is client-only; SSR renders the mobile
-  shell.
+- v4 numeric sizes = **pixels**, not percent.
+- rrp **mis-measures hidden panels** → gate the PanelGroup behind a JS media query,
+  never CSS `hidden`.
+- v4 has **no `onCollapse`/`onExpand` and no `order`** — detect collapse via
+  `onResize`/`isCollapsed()`; order panels by DOM position.
+- Persistence is `useDefaultLayout` (**no `autoSaveId`**); `panelIds` must match.
+- shadcn CLI here runs under **npm**: `npx shadcn@4.11.0 add <comp> -y`.
+- Mobile (below `md`) keeps the existing header Sheets; `MobileShell` is just
+  header + `<main>` + `ConceptSheet`.
 
-## Verification (no FE test runner — verify in browser)
-
-```bash
-# backend (repo root)
-go run ./cmd/server
-# frontend (web/)
-npm run dev            # http://localhost:3000
-npm run typecheck      # must be clean
-npm run lint           # must be clean
-npm run build          # must be clean
-```
+## Verification (browser; no FE test runner)
 
 Manual checks:
 1. Drag the left handle → nav resizes within 200–360px; drag the right handle →
    rail resizes within 256–640px.
 2. Collapse the rail (existing button) → strip shows; expand restores width.
-   Dragging the rail below its min collapses it; `?`/concept links re-expand it.
+   Dragging the rail below its min collapses it; a `?`/concept link re-expands it.
 3. Collapse the left nav (toggle) → icons-only rail; links still navigate (tooltips
    on hover), active item highlighted; toggle/drag re-expands.
 4. Reload → both panel widths and both collapse states restored.
@@ -141,5 +185,6 @@ Manual checks:
 
 ## Decisions locked
 
-- Both panels resizable + **collapsible**. Left nav collapses to **icons-only**
-  (56px), right rail to its **strip** (32px). Confirmed with the user.
+Both panels resizable + collapsible. Left nav → **icons-only** (56px), right rail →
+**strip** (32px). Sizes persisted via `useDefaultLayout`; concepts collapse stays
+provider-owned; provider unchanged.
