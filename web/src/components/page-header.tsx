@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { Hint } from "./hint";
+import { useConceptPanel } from "./concept-panel-provider";
 import type { HintKey } from "./hint-content";
 
 interface PageHeaderProps {
@@ -11,13 +14,21 @@ interface PageHeaderProps {
   actions?: React.ReactNode;
 }
 
-// Standard page title block with an optional "?" hint and an actions slot.
+// Standard page title block. Its `hint` both renders the inline "?" and
+// registers the page's default concept for the side panel.
 export function PageHeader({
   title,
   description,
   hint,
   actions,
 }: PageHeaderProps) {
+  const { setDefaultConcept } = useConceptPanel();
+
+  useEffect(() => {
+    setDefaultConcept(hint ?? null);
+    return () => setDefaultConcept(null);
+  }, [hint, setDefaultConcept]);
+
   return (
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="space-y-1">
