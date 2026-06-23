@@ -7,21 +7,15 @@ import type { HintKey } from "./hint-content";
 interface FieldLabelProps {
   htmlFor?: string;
   children: React.ReactNode;
-  // Attach a "?" hint by registry id or ad-hoc title+content.
   hint?: HintKey;
-  hintTitle?: string;
-  hintBody?: React.ReactNode;
   required?: boolean;
 }
 
-// A form label that can carry a "?" hint inline, so any field can be explained
-// without cluttering the layout.
+// A form label that can carry a "?" hint inline.
 export function FieldLabel({
   htmlFor,
   children,
   hint,
-  hintTitle,
-  hintBody,
   required,
 }: FieldLabelProps) {
   return (
@@ -30,11 +24,7 @@ export function FieldLabel({
         {children}
         {required && <span className="text-destructive"> *</span>}
       </Label>
-      {hint ? (
-        <Hint id={hint} />
-      ) : hintTitle ? (
-        <Hint title={hintTitle}>{hintBody}</Hint>
-      ) : null}
+      {hint && <Hint id={hint} />}
     </div>
   );
 }
