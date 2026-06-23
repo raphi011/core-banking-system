@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { EnumBadge } from "@/components/enum-badge";
 import { ErrorState } from "@/components/error-state";
 import { Hint } from "@/components/hint";
@@ -33,7 +33,7 @@ function DepositAccountRow({
       <span className="flex min-w-0 items-center gap-2">
         <span className="truncate text-sm font-medium">{account.name}</span>
         <EnumBadge value={account.status} />
-        <CopyId id={account.id} />
+        <IdText id={account.id} />
       </span>
       <span className="flex items-center gap-3">
         <span className="text-right text-sm font-medium">

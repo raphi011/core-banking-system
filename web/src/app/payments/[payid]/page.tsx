@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { EnumBadge } from "@/components/enum-badge";
 import { ErrorState } from "@/components/error-state";
 import { Hint } from "@/components/hint";
@@ -77,7 +77,7 @@ export default function PaymentDetailPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-semibold tracking-tight">Payment</h2>
-              <CopyId id={p.id} />
+              <IdText id={p.id} />
               <EnumBadge value={p.status} />
             </div>
             <div className="flex items-center gap-2">
@@ -143,7 +143,7 @@ export default function PaymentDetailPage() {
                 </Row>
                 {p.mandateId && (
                   <Row label="Mandate" hint="requires-mandate">
-                    <CopyId id={p.mandateId} />
+                    <IdText id={p.mandateId} />
                   </Row>
                 )}
                 {p.endToEndId && <Row label="End-to-end ID">{p.endToEndId}</Row>}
@@ -164,24 +164,24 @@ export default function PaymentDetailPage() {
               <CardContent className="py-0">
                 <Row label="Debtor" hint="debtor-leg">
                   <span className="flex flex-col items-end gap-0.5">
-                    <CopyId id={p.debtor.participant} />
-                    <CopyId id={p.debtor.account} />
+                    <IdText id={p.debtor.participant} />
+                    <IdText id={p.debtor.account} />
                   </span>
                 </Row>
                 <Row label="Creditor" hint="creditor-leg">
                   <span className="flex flex-col items-end gap-0.5">
-                    <CopyId id={p.creditor.participant} />
-                    <CopyId id={p.creditor.account} />
+                    <IdText id={p.creditor.participant} />
+                    <IdText id={p.creditor.account} />
                   </span>
                 </Row>
                 {p.debtorLegTx && (
                   <Row label="Debtor leg tx">
-                    <CopyId id={p.debtorLegTx} />
+                    <IdText id={p.debtorLegTx} />
                   </Row>
                 )}
                 {p.creditorLegTx && (
                   <Row label="Creditor leg tx">
-                    <CopyId id={p.creditorLegTx} />
+                    <IdText id={p.creditorLegTx} />
                   </Row>
                 )}
                 {p.cycleId && (

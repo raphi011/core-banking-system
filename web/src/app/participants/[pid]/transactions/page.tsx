@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { DataTable, type Column } from "@/components/data-table";
 import { EnumBadge, DirectionBadge } from "@/components/enum-badge";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { Money } from "@/components/money";
 import { Hint } from "@/components/hint";
 import { ErrorState } from "@/components/error-state";
@@ -33,7 +33,7 @@ export default function TransactionsPage() {
   const [selected, setSelected] = useState<Transaction | null>(null);
 
   const columns: Column<Transaction>[] = [
-    { key: "id", header: "ID", render: (t) => <CopyId id={t.id} /> },
+    { key: "id", header: "ID", render: (t) => <IdText id={t.id} /> },
     {
       key: "status",
       header: "Status",
@@ -85,7 +85,7 @@ export default function TransactionsPage() {
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
-                  Transaction <CopyId id={selected.id} />
+                  Transaction <IdText id={selected.id} />
                 </DialogTitle>
                 <DialogDescription>
                   {selected.description || "No description"}
@@ -97,7 +97,7 @@ export default function TransactionsPage() {
                   <EnumBadge value={selected.status} />
                   {selected.reversalOf && (
                     <span className="text-muted-foreground">
-                      reversal of <CopyId id={selected.reversalOf} />
+                      reversal of <IdText id={selected.reversalOf} />
                     </span>
                   )}
                 </div>
@@ -110,7 +110,7 @@ export default function TransactionsPage() {
                     >
                       <span className="flex items-center gap-2">
                         <DirectionBadge direction={e.direction} />
-                        <CopyId id={e.accountId} />
+                        <IdText id={e.accountId} />
                       </span>
                       <Money cents={e.amount} />
                     </div>

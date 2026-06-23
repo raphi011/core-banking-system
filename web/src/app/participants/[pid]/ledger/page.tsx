@@ -27,7 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FieldLabel } from "@/components/field-label";
 import { Hint } from "@/components/hint";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { Money } from "@/components/money";
 import { AccountTypeBadge } from "@/components/enum-badge";
 import { ErrorState } from "@/components/error-state";
@@ -189,7 +189,7 @@ function AccountRow({ pid, account }: { pid: string; account: Account }) {
       <span className="flex items-center gap-2">
         <span className="text-sm">{account.name}</span>
         <AccountTypeBadge type={account.type} />
-        <CopyId id={account.id} />
+        <IdText id={account.id} />
       </span>
       <span className="text-sm font-medium">
         <Money cents={data?.balance ?? 0} />
@@ -206,7 +206,7 @@ function SubledgerBlock({ pid, sub }: { pid: string; sub: Subledger }) {
       <div className="flex items-center justify-between gap-2 border-b bg-muted/40 px-3 py-1.5">
         <span className="flex items-center gap-2 text-sm font-medium">
           {sub.name}
-          <CopyId id={sub.id} />
+          <IdText id={sub.id} />
         </span>
         <AccountDialog
           pending={create.isPending}
@@ -248,7 +248,7 @@ function LedgerBlock({ pid, ledger }: { pid: string; ledger: Ledger }) {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2 text-base">
           {ledger.name}
-          <CopyId id={ledger.id} />
+          <IdText id={ledger.id} />
         </CardTitle>
         <NameDialog
           triggerLabel="Subledger"

@@ -2,7 +2,7 @@
 
 import { DataTable, type Column } from "@/components/data-table";
 import { AmountCell } from "@/components/money";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 
 interface NetPosition {
   participant: string;
@@ -28,7 +28,7 @@ export function NetPositionsTable({
       key: "participant",
       header: "Participant",
       hint: "net-positions",
-      render: (r) => <CopyId id={r.participant} />,
+      render: (r) => <IdText id={r.participant} />,
     },
     {
       key: "amount",

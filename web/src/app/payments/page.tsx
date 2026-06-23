@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { DataTable, type Column } from "@/components/data-table";
 import { EnumBadge } from "@/components/enum-badge";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { Money } from "@/components/money";
 import { ErrorState } from "@/components/error-state";
 import { InitiatePaymentForm } from "@/components/forms/initiate-payment-form";
@@ -18,16 +18,16 @@ export default function PaymentsPage() {
   const { data, isLoading, error, refetch } = usePayments();
 
   const columns: Column<Payment>[] = [
-    { key: "id", header: "ID", render: (p) => <CopyId id={p.id} /> },
+    { key: "id", header: "ID", render: (p) => <IdText id={p.id} /> },
     { key: "scheme", header: "Scheme", render: (p) => p.scheme },
     {
       key: "flow",
       header: "Debtor → Creditor",
       render: (p) => (
         <span className="flex items-center gap-1.5">
-          <CopyId id={p.debtor.participant} />
+          <IdText id={p.debtor.participant} />
           <ArrowRight className="size-3.5 text-muted-foreground" />
-          <CopyId id={p.creditor.participant} />
+          <IdText id={p.creditor.participant} />
         </span>
       ),
     },

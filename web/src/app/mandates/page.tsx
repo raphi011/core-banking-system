@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { DataTable, type Column } from "@/components/data-table";
 import { EnumBadge } from "@/components/enum-badge";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { Money } from "@/components/money";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/error-state";
@@ -46,16 +46,16 @@ export default function MandatesPage() {
   const { data, isLoading, error, refetch } = useMandates();
 
   const columns: Column<Mandate>[] = [
-    { key: "id", header: "ID", render: (m) => <CopyId id={m.id} /> },
+    { key: "id", header: "ID", render: (m) => <IdText id={m.id} /> },
     {
       key: "debtor",
       header: "Debtor",
-      render: (m) => <CopyId id={m.debtor.participant} />,
+      render: (m) => <IdText id={m.debtor.participant} />,
     },
     {
       key: "creditor",
       header: "Creditor",
-      render: (m) => <CopyId id={m.creditor.participant} />,
+      render: (m) => <IdText id={m.creditor.participant} />,
     },
     {
       key: "maxAmount",

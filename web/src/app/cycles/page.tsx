@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import { DataTable, type Column } from "@/components/data-table";
 import { EnumBadge } from "@/components/enum-badge";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { ErrorState } from "@/components/error-state";
 import { OpenCycleForm } from "@/components/forms/open-cycle-form";
 import { useCycles } from "@/lib/api/hooks";
@@ -17,7 +17,7 @@ export default function CyclesPage() {
   const { data, isLoading, error, refetch } = useCycles();
 
   const columns: Column<ClearingCycle>[] = [
-    { key: "id", header: "ID", render: (c) => <CopyId id={c.id} /> },
+    { key: "id", header: "ID", render: (c) => <IdText id={c.id} /> },
     { key: "scheme", header: "Scheme", render: (c) => c.scheme },
     { key: "status", header: "Status", render: (c) => <EnumBadge value={c.status} /> },
     {

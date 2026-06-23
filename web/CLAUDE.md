@@ -35,7 +35,7 @@ Stack: Next.js 16 (App Router) · React 19 · Tailwind v4 (no config file; token
 
 **Routing.** Network-wide pages at `src/app/{payments,mandates,cycles,settlements,central-bank,schemes}` (global because a payment spans two participants). Participant-scoped pages under `src/app/participants/[pid]/`; to add a section, append to the `tabs` array in `[pid]/layout.tsx` and add the page.
 
-**Reusable primitives — don't rebuild these** (`src/components/`): `Hint` (the `?` popover, registry in `hint-content.ts`), `Money`/`MoneyInput`/`AmountCell`, `DataTable`, `EnumBadge`, `ConfirmAction`, `Combobox` + domain pickers in `pickers/` (`ParticipantPicker`, `DepositAccountPicker`, `GLAccountPicker`) — use these for ID entry, never free-text. `PageHeader`, `FieldLabel`, `CopyId`, `ErrorState`.
+**Reusable primitives — don't rebuild these** (`src/components/`): `Hint` (the `?` popover, registry in `hint-content.ts`), `Money`/`MoneyInput`/`AmountCell`, `DataTable`, `EnumBadge`, `ConfirmAction`, `Combobox` + domain pickers in `pickers/` (`ParticipantPicker`, `DepositAccountPicker`, `GLAccountPicker`) — use these for ID entry, never free-text. `PageHeader`, `FieldLabel`, `IdText` (monospace ID display), `ErrorState`.
 
 ## Backend contract gotchas (cause real failures)
 

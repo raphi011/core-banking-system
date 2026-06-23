@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { ErrorState } from "@/components/error-state";
 import { Hint } from "@/components/hint";
 import { NetPositionsTable } from "@/components/net-positions-table";
@@ -35,7 +35,7 @@ export default function SettlementDetailPage() {
         <>
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-semibold tracking-tight">Settlement</h2>
-            <CopyId id={s.id} />
+            <IdText id={s.id} />
           </div>
 
           <Card>
@@ -55,7 +55,7 @@ export default function SettlementDetailPage() {
               <div className="flex items-center gap-1">
                 <div>
                   <div className="text-muted-foreground">Settlement tx</div>
-                  <CopyId id={s.settlementTx} />
+                  <IdText id={s.settlementTx} />
                 </div>
               </div>
               <div>

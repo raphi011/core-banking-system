@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Money } from "@/components/money";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { Hint } from "@/components/hint";
 import type { HintKey } from "@/components/hint-content";
 import { ErrorState } from "@/components/error-state";
@@ -100,7 +100,7 @@ export default function Home() {
                 <Card className="h-full transition-colors hover:border-foreground/30">
                   <CardHeader>
                     <CardTitle className="text-base">{p.name}</CardTitle>
-                    <CopyId id={p.id} />
+                    <IdText id={p.id} />
                   </CardHeader>
                   <CardContent>
                     <p className="flex items-center gap-1.5 text-xs text-muted-foreground">

@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { EnumBadge } from "@/components/enum-badge";
 import { ErrorState } from "@/components/error-state";
 import { Hint } from "@/components/hint";
@@ -50,7 +50,7 @@ export default function CycleDetailPage() {
               <h2 className="text-xl font-semibold tracking-tight">
                 Cycle {c.scheme}
               </h2>
-              <CopyId id={c.id} />
+              <IdText id={c.id} />
               <EnumBadge value={c.status} />
             </div>
             <div className="flex items-center gap-2">

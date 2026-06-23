@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Money } from "@/components/money";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { Hint } from "@/components/hint";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useParticipant, useReserve } from "@/lib/api/hooks";
@@ -84,7 +84,7 @@ export default function ParticipantOverview() {
                 {a.label}
                 <Hint id={a.hint} />
               </span>
-              <CopyId id={a.id} />
+              <IdText id={a.id} />
             </div>
           ))}
         </CardContent>

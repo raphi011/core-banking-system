@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 
 import { useParticipant } from "@/lib/api/hooks";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { ErrorState } from "@/components/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -43,7 +43,7 @@ export default function ParticipantLayout({
             <h1 className="text-2xl font-semibold tracking-tight">
               {data?.name ?? "Participant"}
             </h1>
-            {data && <CopyId id={data.id} />}
+            {data && <IdText id={data.id} />}
           </div>
         )}
         <p className="text-sm text-muted-foreground">Member bank</p>

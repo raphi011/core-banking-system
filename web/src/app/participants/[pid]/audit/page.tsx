@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { DataTable, type Column } from "@/components/data-table";
 import { EnumBadge } from "@/components/enum-badge";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { Hint } from "@/components/hint";
 import { ErrorState } from "@/components/error-state";
 import { useLedgerAudit } from "@/lib/api/hooks";
@@ -23,7 +23,7 @@ const columns: Column<AuditEvent>[] = [
   {
     key: "entityId",
     header: "Entity",
-    render: (e) => <CopyId id={e.entityId} />,
+    render: (e) => <IdText id={e.entityId} />,
   },
 ];
 

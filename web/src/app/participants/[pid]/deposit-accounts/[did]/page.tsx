@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { DataTable, type Column } from "@/components/data-table";
 import { EnumBadge } from "@/components/enum-badge";
 import { ErrorState } from "@/components/error-state";
@@ -307,7 +307,7 @@ export default function DepositAccountDetailPage() {
                 {account.name}
               </h2>
               <EnumBadge value={account.status} />
-              <CopyId id={account.id} />
+              <IdText id={account.id} />
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {account.status !== "Closed" && (
@@ -363,7 +363,7 @@ export default function DepositAccountDetailPage() {
           </div>
 
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            Backed by GL account <CopyId id={account.glAccount} /> · overdraft
+            Backed by GL account <IdText id={account.glAccount} /> · overdraft
             limit <Money cents={account.overdraftLimit} />
             <Hint id="overdraft" />
           </p>

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 
 import { PageHeader } from "@/components/page-header";
 import { DataTable, type Column } from "@/components/data-table";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { ErrorState } from "@/components/error-state";
 import { useSettlements } from "@/lib/api/hooks";
 import { formatDateTime } from "@/lib/dates";
@@ -15,8 +15,8 @@ export default function SettlementsPage() {
   const { data, isLoading, error, refetch } = useSettlements();
 
   const columns: Column<Settlement>[] = [
-    { key: "id", header: "ID", render: (s) => <CopyId id={s.id} /> },
-    { key: "cycleId", header: "Cycle", render: (s) => <CopyId id={s.cycleId} /> },
+    { key: "id", header: "ID", render: (s) => <IdText id={s.id} /> },
+    { key: "cycleId", header: "Cycle", render: (s) => <IdText id={s.cycleId} /> },
     {
       key: "participants",
       header: "Participants",

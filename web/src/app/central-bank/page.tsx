@@ -3,7 +3,7 @@
 import { PageHeader } from "@/components/page-header";
 import { DataTable, type Column } from "@/components/data-table";
 import { AmountCell } from "@/components/money";
-import { CopyId } from "@/components/copy-id";
+import { IdText } from "@/components/id-text";
 import { EnumBadge } from "@/components/enum-badge";
 import { ErrorState } from "@/components/error-state";
 import { useCentralBankAudit, useReserves } from "@/lib/api/hooks";
@@ -14,7 +14,7 @@ const reserveColumns: Column<Reserve>[] = [
   {
     key: "participant",
     header: "Participant",
-    render: (r) => <CopyId id={r.participant} />,
+    render: (r) => <IdText id={r.participant} />,
   },
   {
     key: "reserve",
@@ -39,7 +39,7 @@ const auditColumns: Column<AuditEvent>[] = [
   {
     key: "entityId",
     header: "Entity",
-    render: (e) => <CopyId id={e.entityId} />,
+    render: (e) => <IdText id={e.entityId} />,
   },
 ];
 
