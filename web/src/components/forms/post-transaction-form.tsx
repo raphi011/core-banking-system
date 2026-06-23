@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoneyInput, Money } from "@/components/money";
 import { FieldLabel } from "@/components/field-label";
+import { GLAccountPicker } from "@/components/pickers/gl-account-picker";
 import { Hint } from "@/components/hint";
 import { usePostTransaction } from "@/lib/api/hooks";
 import { describeError } from "@/lib/api/errors";
@@ -141,13 +142,11 @@ export function PostTransactionForm({ pid }: { pid: string }) {
             </div>
             {legs.map((leg, i) => (
               <div key={i} className="flex items-end gap-2">
-                <div className="flex-1">
-                  <Input
-                    aria-label="Account ID"
-                    placeholder="account id (copy from Ledger tab)"
+                <div className="min-w-0 flex-1">
+                  <GLAccountPicker
+                    pid={pid}
                     value={leg.accountId}
-                    onChange={(e) => updateLeg(i, { accountId: e.target.value })}
-                    className="font-mono text-xs"
+                    onChange={(accountId) => updateLeg(i, { accountId })}
                   />
                 </div>
                 <Select

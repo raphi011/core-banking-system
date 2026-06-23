@@ -1,7 +1,8 @@
 # Handoff — Educational Next.js Ledger Frontend
 
 Continuation notes for building the rest of `PLAN.md`. Read this + `PLAN.md`
-together. Last commit before handoff: **M0–M3 complete** (`web/` app).
+together. Current state: **M0–M5 + searchable pickers complete and committed**.
+**Next: M6 (dashboard polish + dark mode)** — see the bottom of this doc.
 
 ## Status
 
@@ -11,9 +12,9 @@ together. Last commit before handoff: **M0–M3 complete** (`web/` app).
 | M1 Educational primitives (Hint, money, table, badges) | ✅ done, verified |
 | M2 Participants + Central Bank + Schemes | ✅ done, verified (desktop + mobile screenshots) |
 | M3 General ledger (accounts tree, transactions, reversal, audit) | ✅ done, verified e2e |
-| M4 Deposit layer (accounts, holds, snapshots, funding) | ⬜ next |
-| M5 Payments / Clearing / Settlement | ⬜ |
-| M6 Dashboard polish + dark mode | ⬜ |
+| M4 Deposit layer (accounts, holds, snapshots, funding) | ✅ done, verified e2e |
+| M5 Payments / Clearing / Settlement | ✅ done, verified e2e |
+| M6 Dashboard polish + dark mode | ⬜ next |
 
 ## Run & verify
 
@@ -57,8 +58,12 @@ than `PLAN.md` assumed.
   edit major units, emit cents. `src/lib/money.ts`.
 - `<DataTable columns rows rowKey>` — loading/empty states + per-column hints.
 - `<EnumBadge value>` / `<AccountTypeBadge>` / `<DirectionBadge>`.
-- `<ConfirmAction>` — generic confirm dialog with optional text field. **Use for
-  M5 reject/return/revoke/close/settle and M4 status/close.**
+- `<ConfirmAction>` — generic confirm dialog with optional text field (used for
+  reject/return/revoke/close/settle and deposit status/close).
+- `<Combobox>` (`src/components/ui/combobox.tsx`) + domain pickers
+  (`src/components/pickers/`): `ParticipantPicker`, `DepositAccountPicker(pid)`,
+  `GLAccountPicker(pid)`. Searchable selects — use these, never free-text IDs.
+- `<NetPositionsTable positions>` — signed per-participant nets (cycle/settlement).
 - `<CopyId id>`, `<PageHeader>`, `<FieldLabel hint=…>`, `<ErrorState>`.
 - Mutations: `toast.success/error(describeError(err))`; `describeError` maps
   400/404/409/422/502 to friendly text (see `src/lib/api/errors.ts`).
@@ -78,62 +83,70 @@ than `PLAN.md` assumed.
    deposit account *and* raises the bank's central-bank reserve in step.
    Reserves start at 0 and are seeded this way. So the real intro loop is
    **create participant → open deposit account (M4) → fund**.
-5. **Account IDs are copy-paste** in the transaction form (free-text leg inputs).
-   A select would need to walk ledgers→subledgers→accounts (N+1). Grab IDs via
-   `CopyId` on the General ledger tab. Same applies to M4/M5 forms that take
-   account IDs — consider the same copy-paste approach or build a `useAllAccounts`
-   tree-walker if you want dropdowns.
+5. ~~Account IDs are copy-paste.~~ **Resolved:** all ID-entry fields now use
+   searchable dropdowns (`src/components/ui/combobox.tsx`, built on shadcn
+   `command`/cmdk). Domain pickers in `src/components/pickers/`:
+   `ParticipantPicker`, `DepositAccountPicker(pid)`, `GLAccountPicker(pid)`. The
+   GL picker walks ledgers→subledgers→accounts via `useAllAccounts(pid)`
+   (`getAllAccounts` in `endpoints.ts`, cached, refetch-on-mount). `PartyRef`
+   fields cascade: choosing a participant scopes its account picker and clears a
+   stale account. Used by post-transaction legs, capture-hold counterparty, and
+   payment/mandate debtor/creditor.
 6. **In-memory backend** — all state resets on restart. The UI says so.
 7. **shadcn is a new major.** init: `npx shadcn@latest init -b radix -p nova -y`;
    add: `npx shadcn@latest add <comp> -y`. Components import from the unified
    `radix-ui` package. Tailwind v4 → no config file, tokens in `globals.css`.
 
-## Remaining work
+## What's already built (M4 / M5 / pickers) — key decisions
 
-### M4 — Deposit layer (next)
-Endpoints (types already in `types.ts`, hints already written):
-- `POST/GET /participants/{pid}/deposit-accounts`, `GET .../{did}`,
-  `GET .../{did}/balance` (→ `Balance {book,holds,available}`),
-  `POST .../{did}/status` (`{action: freeze|unfreeze|markDormant|reactivate}`),
-  `DELETE .../{did}` (close; needs zero balance).
-- Holds: `POST/GET .../{did}/holds` (create `{amount, expiresAt?, description?}`),
-  `GET /participants/{pid}/holds/{hid}`, `POST .../{hid}/release`,
-  `POST .../{hid}/capture` (`{counterparty, amount, description}`).
-- Snapshots: `POST/GET .../{did}/snapshots` (POST `{date:"YYYY-MM-DD"}`).
-- `GET /participants/{pid}/deposit-audit`.
-- **Funding**: `fundDeposit` endpoint already exists in `endpoints.ts`; add a
-  `useFundDeposit` hook invalidating the deposit balance + `reserves()` +
-  `centralBankAudit()`.
+**M4 — Deposit layer.** `deposit-accounts` list (per-row available balance) +
+`deposit-accounts/[did]` detail (book/holds/available card, legal-only status
+transitions + close via `ConfirmAction`, holds with create/release/capture,
+end-of-day snapshots) + a `deposit-audit` tab. Funding is a **"Fund" button on
+the detail page** (it targets a specific account), not a separate tab. Deposit
+keys nest under `["participants", pid, "deposit-accounts"]` (one invalidate
+clears the subtree); `useFundDeposit` also invalidates `reserves`/
+`centralBankAudit`; `useCaptureHold` also invalidates the ledger (it posts a GL
+tx). Only legal status transitions are shown per status (`STATUS_TRANSITIONS`).
 
-Add a **"Deposit accounts"** tab (and optionally **"Funding"**) to
-`[pid]/layout.tsx`. Pages: deposit-account list + open form; detail showing the
-three-part balance (book/holds/available + overdraft hints), status actions
-(`ConfirmAction`), close (DELETE), holds list with create/release/capture,
-snapshots list + take-snapshot, deposit audit. Forms:
-`open-deposit-account-form`, `create-hold-form`, `capture-hold-form`,
-`fund-participant-form`. **This completes the create→fund→hold→capture loop.**
+**M5 — Payment network.** `/mandates` (list + create + revoke), `/payments`
+(+`[payid]` detail: parties, legs, cycle link, scheme-aware reject/return),
+`/cycles` (+`[cid]` detail: timeline, net-positions, payments, close & settle),
+`/settlements` (+`[sid]`). Shared `net-positions-table`. Forms:
+`party-ref-fields`, `create-mandate-form`, `initiate-payment-form` (scheme-aware:
+mandate field shown+required only when `scheme.requiresMandate`), `open-cycle-form`.
+Backend contracts: reject/return take `{reason}`; revoke/close/settle take **no
+body**. Reject shown for `Initiated|Accepted|Cleared`; return only when
+`Settled && scheme.allowsReturn`. Money-moving mutations use a broad
+`invalidateNetwork` (payments/cycles/settlements/reserves/centralBankAudit + all
+`["participants"]`) — simplest correct choice for the tiny in-memory dataset.
 
-### M5 — Payments / Clearing / Settlement (network-level pages: `/payments`,
-`/mandates`, `/cycles`, `/settlements` — nav links already exist)
-Endpoints: mandates `POST/GET /mandates`, `GET /{mid}`, `POST /{mid}/revoke`;
-payments `POST/GET /payments`, `GET /{payid}`, `POST .../reject`, `.../return`;
-cycles `POST/GET /cycles` (open `{scheme}`), `GET /{cid}`, `POST .../close`,
-`.../settle`; settlements `GET /settlements`, `GET /{sid}`.
-**Check `api/handlers_payment.go` for the reject/return/revoke request bodies**
-(reason vs empty) before wiring — not yet confirmed. Key form:
-`initiate-payment-form` is scheme-aware (mandate field required iff
-`scheme.requiresMandate`; debtor/creditor are `PartyRef {participant, account,
-iban?}`). Cycle detail shows the net-positions table (`netting`/`net-positions`
-hints). `settle` invalidates the cycle, settlements, payments, and
-`reserves()`/`centralBankAudit()`.
+**Searchable pickers** (see gotcha #5) replace every free-text ID input.
 
-### M6 — Polish
-Dashboard aggregations + "how money moves" explainer; **dark mode** (`next-themes`
-is already installed — add a `ThemeProvider` in `providers.tsx` + a toggle in the
-topbar; `globals.css` already has `.dark` tokens); a11y pass; final
-`typecheck && lint && build`; run the full teaching loop end-to-end.
+## Next: M6 — Dashboard polish + dark mode
+
+1. **Dark mode.** `next-themes` is installed and `globals.css` already has
+   `.dark` tokens. Add a `ThemeProvider` (`attribute="class"`,
+   `defaultTheme="system"`) in `src/components/providers.tsx`, then a toggle in
+   the topbar (`app-shell.tsx` header, beside `ParticipantSwitcher`) — a shadcn
+   `DropdownMenu` (light/dark/system) is the usual pattern (`dropdown-menu` is
+   already added). Avoid the hydration flash (mounted-check or
+   `suppressHydrationWarning` on `<html>`).
+2. **Dashboard (`src/app/page.tsx`, currently a placeholder).** Aggregate from
+   existing hooks: participant count, total reserves (`useReserves`), open
+   cycles / in-flight payments (`useCycles`/`usePayments`), recent settlements.
+   Add a **"How money moves"** explainer (create → fund → pay → clear → settle)
+   wired with `<Hint>`s — the teaching centrepiece.
+3. **a11y pass.** Dialog focus traps, color contrast in both themes, icon-button
+   `aria-label`s. (Combobox keyboard nav already works via cmdk.)
+4. **Final gate.** `npm run typecheck && npm run lint && npm run build` clean;
+   re-run the full teaching loop end-to-end in the browser (create participant →
+   open deposit account → fund → hold → capture → mandate → payment → cycle →
+   settle).
 
 ## Verification done so far
-M3 e2e (via proxy): created Asset+Liability accounts → posted balanced
-Debit/Credit → `201 Posted` → book balance correct → reversal `201` with
-`reversalOf` → unbalanced post → `400`. typecheck + lint clean at every milestone.
+M3–M5 verified e2e through the proxy: post/reverse (balanced ✓, unbalanced →
+400), deposit hold/capture (available drops, book unchanged until capture),
+payment → cycle → settle (reserves move by exactly the net positions). Pickers
+verified in-browser (Playwright): type-to-filter + participant→account cascade.
+`typecheck` + `lint` clean at every milestone.
