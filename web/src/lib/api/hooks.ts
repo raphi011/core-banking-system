@@ -11,6 +11,7 @@ import {
 
 import { buildKnownAccounts, projectStatement } from "@/lib/statement";
 import type { StatementRow } from "@/lib/statement";
+import type { AccountType } from "@/lib/enums";
 
 import * as api from "./endpoints";
 import { qk } from "./query-keys";
@@ -138,6 +139,45 @@ export function useAllAccounts(pid: string) {
     queryFn: () => api.getAllAccounts(pid),
     enabled: pid !== "",
   });
+}
+
+// A single GL account with its ledger/subledger context, derived from the
+// cached chart of accounts (there's no per-account GET endpoint). Returns
+// undefined for an unknown id once loading settles → the page shows not-found.
+export function useGLAccount(pid: string, aid: string) {
+  const q = useAllAccounts(pid);
+  const account = useMemo(() => q.data?.find((a) => a.id === aid), [q.data, aid]);
+  return {
+    account,
+    isLoading: q.isLoading,
+    error: q.error,
+    refetch: () => q.refetch(),
+  };
+}
+
+// The General Ledger projected onto ANY account, signed by its normal balance,
+// with the account's book balance for reconciliation. The deposit-specific
+// useStatement is the Liability sibling of this; here `type` comes from the
+// resolved account (pass undefined while it loads — rows aren't shown yet).
+export function useAccountStatement(pid: string, aid: string, type: AccountType | undefined) {
+  const txq = useTransactions(pid, aid);
+  const balq = useAccountBalance(pid, aid);
+  const partq = useParticipant(pid);
+
+  const known = useMemo(() => buildKnownAccounts(partq.data), [partq.data]);
+  const { rows, finalBalance } = useMemo(
+    () => projectStatement(txq.data ?? [], aid, { type: type ?? "Liability", knownAccounts: known }),
+    [txq.data, aid, type, known],
+  );
+
+  return {
+    rows: rows as StatementRow[],
+    finalBalance,
+    book: balq.data?.balance,
+    isLoading: txq.isLoading || balq.isLoading,
+    error: txq.error ?? balq.error,
+    refetch: () => txq.refetch(),
+  };
 }
 
 // --- Ledger: transactions -------------------------------------------------
