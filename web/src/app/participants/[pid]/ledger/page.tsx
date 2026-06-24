@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -187,7 +188,12 @@ function AccountRow({ pid, account }: { pid: string; account: Account }) {
   return (
     <div className="flex items-center justify-between gap-3 px-3 py-2">
       <span className="flex items-center gap-2">
-        <span className="text-sm">{account.name}</span>
+        <Link
+          href={`/participants/${pid}/accounts/${account.id}`}
+          className="text-sm hover:underline"
+        >
+          {account.name}
+        </Link>
         <AccountTypeBadge type={account.type} />
         <IdText id={account.id} />
       </span>

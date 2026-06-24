@@ -22,6 +22,7 @@ import { CreateHoldForm } from "@/components/forms/create-hold-form";
 import { CaptureHoldForm } from "@/components/forms/capture-hold-form";
 import { FundParticipantForm } from "@/components/forms/fund-participant-form";
 import { StatementCard } from "@/components/statement/statement-card";
+import { AccountRef } from "@/components/account-ref";
 import {
   useCloseDepositAccount,
   useDepositAccount,
@@ -364,7 +365,7 @@ export default function DepositAccountDetailPage() {
           </div>
 
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            Backed by GL account <IdText id={account.glAccount} /> · overdraft
+            Backed by GL account <AccountRef pid={pid} id={account.glAccount} /> · overdraft
             limit <Money cents={account.overdraftLimit} />
             <Hint id="overdraft" />
           </p>
