@@ -1,10 +1,8 @@
-// One typed function per backend route. Each returns the parsed DTO(s). Grows
-// as milestones add coverage; see PLAN.md for the full endpoint → screen map.
+// One typed function per backend route. Each returns the parsed DTO(s).
 
 import { request, qs } from "./client";
 import type {
   Account,
-  AuditEvent,
   Balance,
   BookBalance,
   CaptureHoldRequest,
@@ -70,10 +68,6 @@ export function listReserves(): Promise<Reserve[]> {
 
 export function getReserve(pid: string): Promise<Reserve> {
   return request("GET", `/central-bank/reserves/${pid}`);
-}
-
-export function centralBankAudit(): Promise<AuditEvent[]> {
-  return request("GET", "/central-bank/audit");
 }
 
 // --- Ledger: ledgers / subledgers / accounts -----------------------------
@@ -187,15 +181,6 @@ export function reverseTransaction(
   );
 }
 
-// --- Ledger: audit --------------------------------------------------------
-
-export function ledgerAudit(
-  pid: string,
-  entity?: string,
-): Promise<AuditEvent[]> {
-  return request("GET", `/participants/${pid}/audit${qs({ entity })}`);
-}
-
 // --- Deposit: accounts ----------------------------------------------------
 
 export function listDepositAccounts(pid: string): Promise<DepositAccount[]> {
@@ -299,12 +284,6 @@ export function takeSnapshot(
     `/participants/${pid}/deposit-accounts/${did}/snapshots`,
     body,
   );
-}
-
-// --- Deposit: audit -------------------------------------------------------
-
-export function depositAudit(pid: string): Promise<AuditEvent[]> {
-  return request("GET", `/participants/${pid}/deposit-audit`);
 }
 
 // --- Payment: mandates ----------------------------------------------------

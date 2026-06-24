@@ -63,13 +63,6 @@ export function useReserve(pid: string) {
   });
 }
 
-export function useCentralBankAudit() {
-  return useQuery({
-    queryKey: qk.centralBankAudit(),
-    queryFn: api.centralBankAudit,
-  });
-}
-
 // --- Ledger: accounts tree ------------------------------------------------
 
 export function useLedgers(pid: string) {
@@ -198,15 +191,14 @@ export function useTransaction(pid: string, tid: string) {
   });
 }
 
-// Invalidate the participant's transactions, account balances and audit after
-// any posting.
+// Invalidate the participant's transactions and account balances after any
+// posting.
 function invalidateLedger(
   qc: ReturnType<typeof useQueryClient>,
   pid: string,
 ) {
   qc.invalidateQueries({ queryKey: ["participants", pid, "transactions"] });
   qc.invalidateQueries({ queryKey: ["participants", pid, "accounts"] });
-  qc.invalidateQueries({ queryKey: ["participants", pid, "audit"] });
 }
 
 export function usePostTransaction(pid: string) {
@@ -227,26 +219,17 @@ export function useReverseTransaction(pid: string) {
   });
 }
 
-export function useLedgerAudit(pid: string, entity?: string) {
-  return useQuery({
-    queryKey: qk.ledgerAudit(pid, entity),
-    queryFn: () => api.ledgerAudit(pid, entity),
-    enabled: pid !== "",
-  });
-}
-
 // --- Deposit: accounts ----------------------------------------------------
 
 // Invalidate the participant's whole deposit subtree (every account, balance,
-// hold list and snapshot list) plus the deposit audit log. Used after any
-// deposit mutation — broad, but the subtree is small and it's always correct,
-// even for release/capture where we only have a hold id, not its account.
+// hold list and snapshot list). Used after any deposit mutation — broad, but
+// the subtree is small and it's always correct, even for release/capture where
+// we only have a hold id, not its account.
 function invalidateDeposits(
   qc: ReturnType<typeof useQueryClient>,
   pid: string,
 ) {
   qc.invalidateQueries({ queryKey: qk.depositAccounts(pid) });
-  qc.invalidateQueries({ queryKey: qk.depositAudit(pid) });
 }
 
 export function useDepositAccounts(pid: string) {
@@ -324,7 +307,7 @@ export function useCloseDepositAccount(pid: string) {
 }
 
 // Funds a deposit account and raises the bank's central-bank reserve in step,
-// so this also refreshes reserves and the central-bank audit log.
+// so this also refreshes reserves.
 export function useFundDeposit(pid: string) {
   const qc = useQueryClient();
   return useMutation({
@@ -334,7 +317,6 @@ export function useFundDeposit(pid: string) {
       invalidateDeposits(qc, pid);
       qc.invalidateQueries({ queryKey: qk.reserves() });
       qc.invalidateQueries({ queryKey: qk.reserve(pid) });
-      qc.invalidateQueries({ queryKey: qk.centralBankAudit() });
     },
   });
 }
@@ -367,7 +349,7 @@ export function useReleaseHold(pid: string) {
 }
 
 // Capturing posts a real ledger transaction, so it also refreshes the ledger
-// (transactions, account balances, ledger audit).
+// (transactions, account balances).
 export function useCaptureHold(pid: string) {
   const qc = useQueryClient();
   return useMutation({
@@ -399,18 +381,7 @@ export function useTakeSnapshot(pid: string, did: string) {
       api.takeSnapshot(pid, did, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.snapshots(pid, did) });
-      qc.invalidateQueries({ queryKey: qk.depositAudit(pid) });
     },
-  });
-}
-
-// --- Deposit: audit -------------------------------------------------------
-
-export function useDepositAudit(pid: string) {
-  return useQuery({
-    queryKey: qk.depositAudit(pid),
-    queryFn: () => api.depositAudit(pid),
-    enabled: pid !== "",
   });
 }
 
@@ -455,7 +426,6 @@ function invalidateNetwork(qc: ReturnType<typeof useQueryClient>) {
   qc.invalidateQueries({ queryKey: qk.cycles() });
   qc.invalidateQueries({ queryKey: qk.settlements() });
   qc.invalidateQueries({ queryKey: qk.reserves() });
-  qc.invalidateQueries({ queryKey: qk.centralBankAudit() });
   qc.invalidateQueries({ queryKey: ["participants"] });
 }
 

@@ -28,9 +28,7 @@ export default function ParticipantLayout({
     { href: base, label: "Overview", exact: true },
     { href: `${base}/ledger`, label: "General ledger" },
     { href: `${base}/transactions`, label: "Transactions" },
-    { href: `${base}/audit`, label: "Audit" },
     { href: `${base}/deposit-accounts`, label: "Deposit accounts" },
-    { href: `${base}/deposit-audit`, label: "Deposit audit" },
   ];
 
   return (
