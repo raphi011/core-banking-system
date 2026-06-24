@@ -23,7 +23,7 @@ function StatementBody({
   const { rows, book, isLoading, error, refetch } = useStatement(pid, did, account.glAccount);
   if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
   if (isLoading) return <Skeleton className="h-64 w-full" />;
-  return <StatementTable rows={rows} book={book} glAccount={account.glAccount} />;
+  return <StatementTable rows={rows} book={book} glAccount={account.glAccount} pid={pid} />;
 }
 
 export default function StatementPage() {

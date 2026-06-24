@@ -42,7 +42,7 @@ export function StatementCard({
           <Skeleton className="h-40 w-full" />
         ) : (
           <>
-            <StatementTable rows={recent} book={book} glAccount={account.glAccount} />
+            <StatementTable rows={recent} book={book} glAccount={account.glAccount} pid={pid} />
             {hasMore && (
               <p className="text-xs text-muted-foreground">
                 Showing the {recent.length} most recent of {rows.length} transactions.{" "}

@@ -14,30 +14,31 @@ import { AmountCell, Money } from "@/components/money";
 import { IdText } from "@/components/id-text";
 import { DirectionBadge } from "@/components/enum-badge";
 import { Hint } from "@/components/hint";
+import { AccountRef } from "@/components/account-ref";
 import { formatDate } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import type { ContraRef, StatementRow } from "@/lib/statement";
+import type { HintKey } from "@/components/hint-content";
 
-function ContraCell({ contra }: { contra: ContraRef }) {
+function ContraCell({ pid, contra }: { pid: string; contra: ContraRef }) {
   if (contra.kind === "split") {
     return <span className="text-xs text-muted-foreground">Split · {contra.count} legs</span>;
   }
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <IdText id={contra.accountId} />
-      {contra.label && <span className="text-xs text-muted-foreground">· {contra.label}</span>}
-    </span>
-  );
+  return <AccountRef pid={pid} id={contra.accountId} label={contra.label} />;
 }
 
 export function StatementTable({
   rows,
   book,
   glAccount,
+  pid,
+  amountHintId = "statement-amount",
 }: {
   rows: StatementRow[];
   book?: number;
   glAccount: string;
+  pid: string;
+  amountHintId?: HintKey;
 }) {
   const [openTx, setOpenTx] = useState<string | null>(null);
 
@@ -63,7 +64,7 @@ export function StatementTable({
               <TableHead className="text-right">
                 <span className="inline-flex items-center gap-1.5">
                   Amount
-                  <Hint id="statement-amount" />
+                  <Hint id={amountHintId} />
                 </span>
               </TableHead>
               <TableHead className="text-right">Balance</TableHead>
@@ -93,7 +94,7 @@ export function StatementTable({
                     </span>
                   </TableCell>
                   <TableCell>
-                    <ContraCell contra={row.contra} />
+                    <ContraCell pid={pid} contra={row.contra} />
                   </TableCell>
                   <TableCell>
                     <AmountCell cents={row.delta} signed />
@@ -122,7 +123,7 @@ export function StatementTable({
                               >
                                 <span className="inline-flex items-center gap-2">
                                   <DirectionBadge direction={e.direction} />
-                                  <IdText id={e.accountId} />
+                                  <AccountRef pid={pid} id={e.accountId} />
                                   {isMine && (
                                     <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] text-blue-700 dark:bg-blue-900 dark:text-blue-200">
                                       this account
