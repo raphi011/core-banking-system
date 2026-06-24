@@ -142,7 +142,7 @@ One further scheme shows where the same foundation naturally extends:
 
 Card transactions get their own chapter next (Chapter 13).
 
-Both extensions also motivate enforcing the account *states* of Chapter 8 on the
+Instant payments and card transactions alike motivate enforcing the account *states* of Chapter 8 on the
 debit path — an account in a restricted state should block payment initiation — and
 checking that a bank actually holds enough reserves before its net settlement is
 allowed to post. The themes of the whole book, in other words, converge here: the

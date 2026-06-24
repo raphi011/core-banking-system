@@ -9,7 +9,7 @@ implementation.
 ## Goal
 
 `book/*.md` → a valid, well-formed `book/how-money-moves.epub` containing all
-twelve chapters plus front matter, a working table of contents, and readable
+fourteen chapters plus front matter, a working table of contents, and readable
 diagrams — produced by a single command, with no manual steps.
 
 ## Source inventory
@@ -116,7 +116,7 @@ their own fonts.
    `book/how-money-moves.epub` with no errors.
 2. **Structure check:** `unzip -l book/how-money-moves.epub` shows `mimetype`
    first; `unzip -v` shows it `Stored` (0% compression). `META-INF/container.xml`,
-   the OPF, the nav doc, and all twelve chapters are present.
+   the OPF, the nav doc, and all fourteen chapters are present.
 3. **Validation:** run [`epubcheck`](https://github.com/w3c/epubcheck) against the
    output (`epubcheck book/how-money-moves.epub`) — zero errors. (Route A: Pandoc
    output passes epubcheck out of the box. Route B: validate during development.)

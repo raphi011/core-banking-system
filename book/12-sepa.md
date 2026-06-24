@@ -41,7 +41,7 @@ the ISO 20022 `pacs.003` message.
 
 Here's the payoff of the shared-machinery design: once the mandate checks pass, the
 *postings for a direct debit are identical to a credit transfer* — debtor →
-creditor, through clearing suspense and central-bank reserves, exactly as above. The
+creditor, through clearing suspense and central-bank reserves, exactly as in Chapter 11. The
 money flows the same way; only the rules about *who may initiate* and *what
 authorization is required* differ. That's the whole reason schemes can be an
 abstraction over one posting engine rather than separate systems.
