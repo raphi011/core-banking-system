@@ -57,6 +57,7 @@ The sections below are organized around these layers: general-ledger concepts fi
   - [End-of-Day Snapshots](#end-of-day-snapshots)
   - [Audit Trail](#audit-trail)
 - [Statements](#statements)
+  - [Derived from the Ledger, Not a Separate Account Ledger](#derived-from-the-ledger-not-a-separate-account-ledger)
   - [What Appears on a Statement](#what-appears-on-a-statement)
   - [Why Transactions and Balances May Not Reconcile](#why-transactions-and-balances-may-not-reconcile)
 - [Usage Example](#usage-example)
@@ -665,6 +666,22 @@ The audit trail provides:
 ## Statements
 
 A bank statement is a periodic report (typically monthly) summarizing all activity and balances on a customer's account. Statements rely on both the booking date and value date of each transaction.
+
+### Derived from the Ledger, Not a Separate Account Ledger
+
+This system is **ledger-first**: a customer's deposit account keeps no private ledger of its own. It is *backed by* a single general-ledger account (`DepositAccount.glAccount`) — a **liability** under the bank's customer subledger. A per-account statement is therefore not read from a dedicated store; it is **derived from the general ledger** by filtering for the transactions that touch the backing account and projecting each one onto the single leg that affects this account:
+
+1. **Filter** the general ledger to transactions with an entry on the backing account.
+2. **Project** each transaction onto that leg. The *other* legs are the **contra** — where the money came from or went to (often a clearing-suspense account while a payment is in flight).
+3. **Sign by normal balance.** The backing account is a liability, so a **credit raises** the customer's balance and a **debit lowers** it. A consumer statement shows this as `+` / `−`; the underlying entry is still an ordinary debit or credit.
+4. **Accumulate a running balance** from oldest to newest. The final running balance must equal the account's **book balance** — a built-in reconciliation check.
+
+Two consequences follow directly from this design:
+
+- **Holds never appear on the statement.** A hold is a deposit-layer authorization that posts nothing to the ledger until it is captured (see [Holds](#holds-authorization--pending-transactions)). A ledger-derived statement shows only real book movements.
+- **A reversal is its own transaction.** Reversing a posting creates a new, equal-and-opposite transaction (see [Transaction Reversal](#transaction-reversal)); the original and the reversal both appear as separate lines that net to zero, rather than the original line disappearing.
+
+Because a payment's debtor leg is posted at **initiation** (into clearing suspense) while the creditor leg is posted at **settlement** (see [The Payment Lifecycle](#the-payment-lifecycle)), an outgoing payment appears on the *payer's* statement immediately — with the contra showing the suspense account — well before the payee is credited.
 
 ### What Appears on a Statement
 

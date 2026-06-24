@@ -661,7 +661,7 @@ The running balance reconciles to the account's **book** balance: a built-in cor
     title: "Why credits add",
     body: `Your deposit is a **liability** to the bank — money it owes you. Its [[normal-balance]] is credit, so a **Credit increases** your balance (shown \`+\`) and a **Debit decreases** it (shown \`−\`).
 
-Expand a row to see the full balanced transaction: your line is one leg; the contra account is where the money came from or went to.`,
+Expand a row to see the full balanced transaction: your line is one leg; the contra account is where the money came from or went to — often the [[clearing-suspense]] account while a payment is in flight.`,
   },
 } satisfies Record<string, HintEntry>;
 
