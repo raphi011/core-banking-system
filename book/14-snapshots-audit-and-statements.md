@@ -1,4 +1,4 @@
-# Chapter 12 — Snapshots, Audit Trails, and Statements
+# Chapter 14 — Snapshots, Audit Trails, and Statements
 
 We've followed money from a single balanced entry all the way to final settlement
 across an interbank network. What remains is the bank's memory: how it captures

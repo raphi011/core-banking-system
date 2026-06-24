@@ -28,7 +28,9 @@ diagrams — produced by a single command, with no manual steps.
 | 9 | `09-clearing-and-settlement.md` | Chapter 9 |
 | 10 | `10-the-interbank-network.md` | Chapter 10 |
 | 11 | `11-payment-schemes.md` | Chapter 11 |
-| 12 | `12-snapshots-audit-and-statements.md` | Chapter 12 |
+| 12 | `12-sepa.md` | Chapter 12 |
+| 13 | `13-card-transactions.md` | Chapter 13 |
+| 14 | `14-snapshots-audit-and-statements.md` | Chapter 14 |
 
 The chapter order is explicit (this table), not inferred from filenames, so
 reordering or inserting chapters is a one-line change.
@@ -54,7 +56,7 @@ pandoc \
   --css book/epub.css \
   --epub-cover-image book/img/cover.png \
   -o book/how-money-moves.epub \
-  01-what-a-bank-is.md 02-double-entry-bookkeeping.md ... 12-snapshots-audit-and-statements.md
+  01-what-a-bank-is.md 02-double-entry-bookkeeping.md ... 14-snapshots-audit-and-statements.md
 ```
 
 - **Pros:** minimal code; robust; battle-tested EPUB output.

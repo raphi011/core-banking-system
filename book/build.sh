@@ -30,7 +30,9 @@ CHAPTERS=(
   09-clearing-and-settlement.md
   10-the-interbank-network.md
   11-payment-schemes.md
-  12-snapshots-audit-and-statements.md
+  12-sepa.md
+  13-card-transactions.md
+  14-snapshots-audit-and-statements.md
 )
 
 if ! command -v pandoc >/dev/null 2>&1; then

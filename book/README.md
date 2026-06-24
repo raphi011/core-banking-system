@@ -56,9 +56,11 @@ money actually moves.
 9. [Clearing and Settlement](09-clearing-and-settlement.md)
 10. [The Interbank Network](10-the-interbank-network.md)
 11. [Payment Schemes](11-payment-schemes.md)
+12. [SEPA: Credit Transfers and Direct Debits](12-sepa.md)
+13. [Card Transactions](13-card-transactions.md)
 
 **Part V — Records and Reporting**
-12. [Snapshots, Audit Trails, and Statements](12-snapshots-audit-and-statements.md)
+14. [Snapshots, Audit Trails, and Statements](14-snapshots-audit-and-statements.md)
 
 ## Reading this on an e-reader
 
