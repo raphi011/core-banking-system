@@ -21,6 +21,7 @@ import { ConfirmAction } from "@/components/forms/confirm-action";
 import { CreateHoldForm } from "@/components/forms/create-hold-form";
 import { CaptureHoldForm } from "@/components/forms/capture-hold-form";
 import { FundParticipantForm } from "@/components/forms/fund-participant-form";
+import { StatementCard } from "@/components/statement/statement-card";
 import {
   useCloseDepositAccount,
   useDepositAccount,
@@ -371,6 +372,7 @@ export default function DepositAccountDetailPage() {
           <BalanceCard pid={pid} did={did} />
           <HoldsCard pid={pid} did={did} />
           <SnapshotsCard pid={pid} did={did} />
+          <StatementCard pid={pid} did={did} account={account} />
         </>
       )}
     </div>
