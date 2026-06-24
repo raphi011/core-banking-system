@@ -94,7 +94,3 @@ holds reserves, and where settlement actually happens. That structure, and the
 elegant way it makes "clearing" and "settlement" concrete rather than abstract, is
 the subject of the next chapter.
 
----
-
-*Previous: [Chapter 8 — The Account Lifecycle and Overdraft](08-account-lifecycle-and-overdraft.md)*
-*Next: [Chapter 10 — The Interbank Network](10-the-interbank-network.md)*

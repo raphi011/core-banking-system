@@ -133,7 +133,3 @@ build a record of money so disciplined that it is *provably* correct, *completel
 auditable, and *trustworthy* down to the last cent. That discipline — not any
 particular piece of software — is what a core banking system really is.
 
----
-
-*Previous: [Chapter 11 — Payment Schemes](11-payment-schemes.md)*
-*Back to the [Table of Contents](README.md)*

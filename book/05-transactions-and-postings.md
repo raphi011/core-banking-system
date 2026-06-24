@@ -125,7 +125,3 @@ moment. But banking runs on a subtler notion of time. The day a transaction is
 from being an edge case, drives interest, availability, and risk. That is the
 subject of the next chapter.
 
----
-
-*Previous: [Chapter 4 — Ledgers, Subledgers, and Money](04-ledgers-subledgers-and-money.md)*
-*Next: [Chapter 6 — Booking Date vs. Value Date](06-booking-date-vs-value-date.md)*

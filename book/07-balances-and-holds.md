@@ -115,7 +115,3 @@ account at a single point in time. The next chapter zooms out to the account's
 whole life — the states it passes through from opening to closure — and to what
 happens when someone tries to spend money that isn't there.
 
----
-
-*Previous: [Chapter 6 — Booking Date vs. Value Date](06-booking-date-vs-value-date.md)*
-*Next: [Chapter 8 — The Account Lifecycle and Overdraft](08-account-lifecycle-and-overdraft.md)*

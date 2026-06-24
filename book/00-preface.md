@@ -1,7 +1,4 @@
-# How Money Moves
-
-*An introduction to the accounting and mechanics of banking: double-entry
-bookkeeping, deposits, clearing, and settlement.*
+# Preface
 
 Most people use banks every day without ever seeing how they work on the inside.
 We deposit a paycheck, tap a card, send a transfer — and money seems to simply
@@ -35,42 +32,3 @@ money actually moves.
   different bank — and why "clearing" and "settlement" are not the same thing.
 - How banks move millions of payments while only transferring the *net* between
   themselves.
-
-## Table of Contents
-
-**Part I — The Foundations of Bank Accounting**
-1. [What a Bank Is](01-what-a-bank-is.md)
-2. [Double-Entry Bookkeeping](02-double-entry-bookkeeping.md)
-3. [The Chart of Accounts](03-the-chart-of-accounts.md)
-4. [Ledgers, Subledgers, and Money](04-ledgers-subledgers-and-money.md)
-
-**Part II — Transactions and Time**
-5. [Transactions and Postings](05-transactions-and-postings.md)
-6. [Booking Date vs. Value Date](06-booking-date-vs-value-date.md)
-7. [Balances and Holds](07-balances-and-holds.md)
-
-**Part III — Accounts Over a Lifetime**
-8. [The Account Lifecycle and Overdraft](08-account-lifecycle-and-overdraft.md)
-
-**Part IV — Moving Money Between Banks**
-9. [Clearing and Settlement](09-clearing-and-settlement.md)
-10. [The Interbank Network](10-the-interbank-network.md)
-11. [Payment Schemes](11-payment-schemes.md)
-
-**Part V — Records and Reporting**
-12. [Snapshots, Audit Trails, and Statements](12-snapshots-audit-and-statements.md)
-
-## Reading this on an e-reader
-
-These chapters are written as Markdown so they are easy to read and edit. To read
-the book on a Kobo, Apple Books, Calibre, or any other e-reader, build a single
-EPUB3 file:
-
-```bash
-./build.sh        # requires pandoc and perl; writes how-money-moves.epub
-```
-
-The build takes the chapters in this directory, adds a cover and a preface, and
-produces a validated `how-money-moves.epub` with a working table of contents and
-one navigable section per chapter. See [`PLAN-epub.md`](PLAN-epub.md) for the
-design notes behind it.

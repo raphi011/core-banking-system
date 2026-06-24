@@ -95,7 +95,3 @@ numbers will add up to the penny. Together they make the next idea possible — 
 idea that the record is so trustworthy you never edit it, you only ever append to
 it. That brings us to transactions themselves.
 
----
-
-*Previous: [Chapter 3 — The Chart of Accounts](03-the-chart-of-accounts.md)*
-*Next: [Chapter 5 — Transactions and Postings](05-transactions-and-postings.md)*

@@ -1,2 +1,5 @@
 # Visual brainstorming companion mockups
 .superpowers/
+
+# Generated EPUB (rebuild with book/build.sh)
+book/how-money-moves.epub

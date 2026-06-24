@@ -140,7 +140,3 @@ is fully specified — within a single bank. The next part of the book leaves th
 single bank behind and asks the harder question: how does money move *between*
 banks at all?
 
----
-
-*Previous: [Chapter 7 — Balances and Holds](07-balances-and-holds.md)*
-*Next: [Chapter 9 — Clearing and Settlement](09-clearing-and-settlement.md)*

@@ -104,7 +104,3 @@ money has been promised but has not yet, finally, moved. The two clocks introduc
 here are the same two clocks that govern how money moves between banks; we're just
 meeting them first in their simplest form.
 
----
-
-*Previous: [Chapter 5 — Transactions and Postings](05-transactions-and-postings.md)*
-*Next: [Chapter 7 — Balances and Holds](07-balances-and-holds.md)*

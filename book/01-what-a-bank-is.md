@@ -102,6 +102,3 @@ once. They are old — the core of the method was written down in fifteenth-cent
 Italy — but they have never been improved on, because they get something exactly
 right. That is where we turn next.
 
----
-
-*Next: [Chapter 2 — Double-Entry Bookkeeping](02-double-entry-bookkeeping.md)*

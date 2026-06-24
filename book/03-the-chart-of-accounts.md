@@ -192,7 +192,3 @@ description of the bank's economic reality. Next we'll see how all these account
 are organized in practice, and how the amounts in them are represented so that not
 a single cent is ever lost to rounding.
 
----
-
-*Previous: [Chapter 2 — Double-Entry Bookkeeping](02-double-entry-bookkeeping.md)*
-*Next: [Chapter 4 — Ledgers, Subledgers, and Money](04-ledgers-subledgers-and-money.md)*

@@ -123,7 +123,3 @@ With the structure in place, one question remains: why do banks settle the *net*
 rather than every payment one by one, and what do the actual postings look like?
 That is the subject of the final chapter of Part IV.
 
----
-
-*Previous: [Chapter 9 — Clearing and Settlement](09-clearing-and-settlement.md)*
-*Next: [Chapter 11 — Payment Schemes](11-payment-schemes.md)*

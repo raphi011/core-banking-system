@@ -205,7 +205,3 @@ to final settlement across an interbank network. The last part of the book steps
 back from movement to *records*: how a bank captures, audits, and reports on
 everything we've watched happen.
 
----
-
-*Previous: [Chapter 10 — The Interbank Network](10-the-interbank-network.md)*
-*Next: [Chapter 12 — Snapshots, Audit Trails, and Statements](12-snapshots-audit-and-statements.md)*

@@ -100,7 +100,3 @@ don't yet have is a way to organize the accounts those transactions touch, or to
 know whether a debit to a given account means "more" or "less." That requires a
 classification of accounts — the chart of accounts — which is where we go next.
 
----
-
-*Previous: [Chapter 1 — What a Bank Is](01-what-a-bank-is.md)*
-*Next: [Chapter 3 — The Chart of Accounts](03-the-chart-of-accounts.md)*
