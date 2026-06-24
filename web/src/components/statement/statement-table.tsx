@@ -1,0 +1,160 @@
+"use client";
+
+import { Fragment, useState } from "react";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { AmountCell, Money } from "@/components/money";
+import { IdText } from "@/components/id-text";
+import { DirectionBadge } from "@/components/enum-badge";
+import { Hint } from "@/components/hint";
+import { formatDate } from "@/lib/dates";
+import { cn } from "@/lib/utils";
+import type { ContraRef, StatementRow } from "@/lib/statement";
+
+function ContraCell({ contra }: { contra: ContraRef }) {
+  if (contra.kind === "split") {
+    return <span className="text-xs text-muted-foreground">Split · {contra.count} legs</span>;
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <IdText id={contra.accountId} />
+      {contra.label && <span className="text-xs text-muted-foreground">· {contra.label}</span>}
+    </span>
+  );
+}
+
+export function StatementTable({
+  rows,
+  book,
+  glAccount,
+}: {
+  rows: StatementRow[];
+  book?: number;
+  glAccount: string;
+}) {
+  const [openTx, setOpenTx] = useState<string | null>(null);
+
+  if (rows.length === 0) {
+    return (
+      <div className="rounded-lg border py-10 text-center text-sm text-muted-foreground">
+        No transactions yet. Fund the account or post one to see it here.
+      </div>
+    );
+  }
+
+  const reconciles = book != null && rows[0].runningBalance === book;
+
+  return (
+    <div className="space-y-2">
+      <div className="overflow-x-auto rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Date</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Contra</TableHead>
+              <TableHead className="text-right">
+                <span className="inline-flex items-center gap-1.5">
+                  Amount
+                  <Hint id="statement-amount" />
+                </span>
+              </TableHead>
+              <TableHead className="text-right">Balance</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <Fragment key={row.txId}>
+                <TableRow
+                  className="cursor-pointer"
+                  onClick={() => setOpenTx((cur) => (cur === row.txId ? null : row.txId))}
+                >
+                  <TableCell className="whitespace-nowrap">{formatDate(row.date)}</TableCell>
+                  <TableCell>
+                    <span className="inline-flex flex-wrap items-center gap-2">
+                      {row.description || "—"}
+                      {row.isReversed && (
+                        <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                          Reversed
+                        </span>
+                      )}
+                      {row.reversalOf && (
+                        <span className="inline-flex items-center gap-1 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                          reverses <IdText id={row.reversalOf} className="text-[10px]" />
+                        </span>
+                      )}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <ContraCell contra={row.contra} />
+                  </TableCell>
+                  <TableCell>
+                    <AmountCell cents={row.delta} signed />
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    <Money cents={row.runningBalance} />
+                  </TableCell>
+                </TableRow>
+                {openTx === row.txId && (
+                  <TableRow className="bg-muted/40 hover:bg-muted/40">
+                    <TableCell colSpan={5} className="p-0">
+                      <div className="space-y-2 px-4 py-3">
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                          Underlying GL transaction <IdText id={row.txId} /> — one balanced double entry
+                        </div>
+                        <div className="divide-y rounded-md border bg-background">
+                          {row.transaction.entries.map((e, i) => {
+                            const isMine = e.accountId === glAccount;
+                            return (
+                              <div
+                                key={e.id ?? i}
+                                className={cn(
+                                  "flex items-center justify-between gap-2 px-3 py-2",
+                                  isMine && "bg-blue-50 dark:bg-blue-950/40",
+                                )}
+                              >
+                                <span className="inline-flex items-center gap-2">
+                                  <DirectionBadge direction={e.direction} />
+                                  <IdText id={e.accountId} />
+                                  {isMine && (
+                                    <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                                      this account
+                                    </span>
+                                  )}
+                                </span>
+                                <Money cents={e.amount} />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </Fragment>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {book != null &&
+        (reconciles ? (
+          <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300">
+            ✓ Running balance reconciles to the book balance <Money cents={book} className="font-medium" />.
+          </p>
+        ) : (
+          <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
+            Running balance (<Money cents={rows[0].runningBalance} />) doesn&apos;t match the book balance
+            (<Money cents={book} />) — usually the statement is still loading or a transaction is missing.
+          </p>
+        ))}
+    </div>
+  );
+}

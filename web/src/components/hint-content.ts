@@ -651,6 +651,18 @@ Snapshot for 2024-03-01:
 
 The [[audit-trail]] records every snapshot event for complete auditability.`,
   },
+  statement: {
+    title: "Account statement",
+    body: `A deposit account has **no ledger of its own**. Its statement is *derived* — every [[double-entry]] GL transaction that touches the account's backing GL account, projected onto that one leg, oldest→newest, with a running balance.
+
+The running balance reconciles to the account's **book** balance: a built-in correctness check. Holds never appear here — they post nothing to the ledger until captured.`,
+  },
+  "statement-amount": {
+    title: "Why credits add",
+    body: `Your deposit is a **liability** to the bank — money it owes you. Its [[normal-balance]] is credit, so a **Credit increases** your balance (shown \`+\`) and a **Debit decreases** it (shown \`−\`).
+
+Expand a row to see the full balanced transaction: your line is one leg; the contra account is where the money came from or went to.`,
+  },
 } satisfies Record<string, HintEntry>;
 
 export type HintKey = keyof typeof hintContent;
