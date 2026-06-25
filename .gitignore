@@ -1,5 +1,8 @@
 # Visual brainstorming companion mockups
 .superpowers/
 
-# Generated EPUB (rebuild with book/build.sh)
-book/how-money-moves.epub
+# Compiled backend binary (make build / make run)
+/bin/
+
+# The book editions (book/how-money-moves.{epub,pdf}) are intentionally checked
+# in so they can be linked and downloaded directly. Rebuild with book/build.sh.

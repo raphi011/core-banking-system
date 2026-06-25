@@ -22,6 +22,17 @@ how a real system models a concept. But the subject of this book is the domain,
 not any particular program: what banks track, why they track it that way, and how
 money actually moves.
 
+## Download
+
+Ready-to-read editions are committed alongside the source and can be downloaded
+directly:
+
+- 📖 [**EPUB**](how-money-moves.epub) — for Kobo, Apple Books, Calibre, and most e-readers
+- 📄 [**PDF**](how-money-moves.pdf) — for printing or reading on any device
+
+Both are rebuilt from the Markdown chapters with [`build.sh`](build.sh) (see
+[Building the book](#building-the-book)).
+
 ## What you'll learn
 
 - Why the money in your checking account is the bank's *debt*, not its asset.
@@ -62,17 +73,21 @@ money actually moves.
 **Part V — Records and Reporting**
 14. [Snapshots, Audit Trails, and Statements](14-snapshots-audit-and-statements.md)
 
-## Reading this on an e-reader
+## Building the book
 
-These chapters are written as Markdown so they are easy to read and edit. To read
-the book on a Kobo, Apple Books, Calibre, or any other e-reader, build a single
-EPUB3 file:
+The chapters are written as Markdown so they are easy to read and edit. The two
+downloadable editions above are rebuilt from them with `build.sh`:
 
 ```bash
-./build.sh        # requires pandoc and perl; writes how-money-moves.epub
+./build.sh          # both EPUB and PDF (default)
+./build.sh epub     # EPUB only — requires pandoc
+./build.sh pdf      # PDF only  — requires pandoc + a LaTeX engine (default: tectonic)
 ```
 
-The build takes the chapters in this directory, adds a cover and a preface, and
-produces a validated `how-money-moves.epub` with a working table of contents and
-one navigable section per chapter. See [`PLAN-epub.md`](PLAN-epub.md) for the
+From the repository root the same builds are available as `make book`,
+`make epub`, and `make pdf`.
+
+The build takes the chapters in this directory, adds a cover/title and the
+preface, and produces a validated EPUB3 and PDF with a working table of contents
+and one navigable chapter per file. See [`PLAN-epub.md`](PLAN-epub.md) for the
 design notes behind it.
