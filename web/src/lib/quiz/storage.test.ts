@@ -49,4 +49,9 @@ describe("progress storage", () => {
     s.setItem("quiz:ch", "{not json");
     expect(readProgress("ch", s)).toBeNull();
   });
+
+  it("does not throw when no storage is available", () => {
+    expect(() => recordResult("ch", 50, "t")).not.toThrow();
+    expect(readProgress("ch")).toBeNull();
+  });
 });

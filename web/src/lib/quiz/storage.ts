@@ -18,7 +18,7 @@ export function readProgress(slug: string, store?: Storage): ChapterProgress | n
   const s = resolveStore(store);
   if (!s) return null;
   const raw = s.getItem(keyFor(slug));
-  if (!raw) return null;
+  if (raw === null) return null;
   try {
     const parsed = JSON.parse(raw) as Partial<ChapterProgress>;
     if (typeof parsed.bestPct !== "number" || typeof parsed.lastPct !== "number") {
