@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Shuffle } from "lucide-react";
 
@@ -12,19 +12,15 @@ import { readProgress, type ChapterProgress } from "@/lib/quiz/storage";
 export default function LearnPage() {
   const parts = useMemo(() => chaptersByPart(), []);
   const [progress, setProgress] = useState<Record<string, ChapterProgress | null>>({});
-  const partsRef = useRef(parts);
 
   useEffect(() => {
-    const snapshot = partsRef.current;
-    const id = requestAnimationFrame(() => {
-      const next: Record<string, ChapterProgress | null> = {};
-      for (const part of snapshot) {
-        for (const c of part.chapters) next[c.slug] = readProgress(c.slug);
-      }
-      setProgress(next);
-    });
-    return () => cancelAnimationFrame(id);
-  }, []);
+    const next: Record<string, ChapterProgress | null> = {};
+    for (const part of parts) {
+      for (const c of part.chapters) next[c.slug] = readProgress(c.slug);
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setProgress(next);
+  }, [parts]);
 
   return (
     <div className="space-y-6">
