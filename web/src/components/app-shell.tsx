@@ -8,6 +8,7 @@ import {
   ArrowLeftRight,
   Building2,
   FileSignature,
+  GraduationCap,
   LayoutDashboard,
   Menu,
   Network,
@@ -48,6 +49,7 @@ interface NavItem {
 // and settlements are global because each spans two participants.
 const NETWORK_NAV: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/learn", label: "Learn", icon: GraduationCap },
   { href: "/payments", label: "Payments", icon: ArrowLeftRight },
   { href: "/mandates", label: "Mandates", icon: FileSignature },
   { href: "/cycles", label: "Clearing cycles", icon: RefreshCw },
