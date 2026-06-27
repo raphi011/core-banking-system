@@ -12,155 +12,310 @@ export const chapter: Chapter = {
       difficulty: "intro",
       concept: "holds",
       prompt:
-        "When a card authorization is approved, what immediately happens to the cardholder's account?",
+        "When a card authorization is approved at a point-of-sale terminal, what immediately happens to the cardholder's account?",
       options: [
         "The book balance decreases and the available balance decreases",
         "The book balance is unchanged but the available balance decreases",
-        "Both the book balance and available balance are unchanged",
+        "Both balances are unchanged; no effect occurs until capture",
         "The book balance decreases but the available balance is unchanged",
       ],
       answer: 1,
       explanation:
-        "At authorization, a [[holds]] is placed. The **book balance stays the same** — no posting has occurred — but the **available balance drops** because the held amount is reserved and cannot be spent.",
+        "An authorization places a [[holds|hold]] — a real-time reservation. **No posting occurs**, so the [[balance-book|book balance]] is untouched. The available balance falls by the authorized amount so those funds cannot be spent twice while the purchase is in flight.",
       explore: { label: "View payments", href: "/payments" },
     },
     {
       kind: "mc",
       id: "ch13-q2",
       difficulty: "intro",
-      concept: "hold-capture",
+      concept: "payment-lifecycle",
       prompt:
-        "In the dual-message card flow, what is 'presentment' (capture)?",
+        "The dual-message card flow has two distinct steps. What are they, in order?",
       options: [
-        "The initial authorization that places a hold",
-        "The real posting that replaces the hold with an actual debit entry",
-        "The moment the merchant receives the funds",
-        "The card network's netting calculation",
+        "Capture → authorization",
+        "Authorization → presentment (capture)",
+        "Presentment → clearing → authorization",
+        "Clearing → authorization → settlement",
       ],
       answer: 1,
       explanation:
-        "[[hold-capture]] (presentment) is when the merchant submits the final amount for collection. The authorization hold is converted into a **real accounting entry** — debit cardholder deposit, credit clearing suspense — and the hold is released.",
+        "The dual-message [[payment-lifecycle]] begins with an **authorization** (hold is placed, no ledger entry) and ends with **presentment** — the merchant's formal claim that triggers [[hold-capture|capture]] into a real posting. These two steps may be hours or days apart.",
+      explore: { label: "View payments", href: "/payments" },
     },
     {
       kind: "truefalse",
       id: "ch13-q3",
       difficulty: "intro",
-      concept: "holds",
+      concept: "scheme-direction-pull",
       prompt:
-        "In a dual-message card transaction the book balance decreases at authorization, before capture.",
-      answer: false,
+        "In a card payment the merchant's acquirer initiates settlement by submitting the presentment claim to the issuer, making cards a pull scheme.",
+      answer: true,
       explanation:
-        "Authorization only places a [[holds]] — **no posting occurs**. The book balance changes only at capture (presentment), when the real debit entry is made. This is the key distinction between dual-message (hold → capture) and single-message flows.",
+        "Cards are a [[scheme-direction-pull|pull scheme]]: the payee side (merchant through acquirer) submits the presentment to collect from the issuer. The payer (cardholder) does not push; the creditor side pulls the funds — the same initiation model as a direct debit.",
     },
     {
       kind: "mc",
       id: "ch13-q4",
-      difficulty: "core",
+      difficulty: "intro",
       concept: "hold-release",
       prompt:
-        "A customer pays $45 at a petrol pump that pre-authorised $100. After the actual fuel amount of $45 is captured, what happens to the remaining $55?",
+        "A petrol pump pre-authorizes $100, but the customer pumps only $45 of fuel. After the $45 is captured, what happens to the remaining $55 reservation?",
       options: [
-        "It is permanently forfeited to the merchant",
-        "It remains held indefinitely until the bank manually releases it",
+        "It is kept on hold until the next billing cycle",
+        "It is transferred to the merchant as an automatic gratuity",
         "The $55 hold is released, restoring that amount to available balance",
         "A second capture is automatically raised for $55",
       ],
       answer: 2,
       explanation:
-        "When the captured amount ($45) is less than the authorised amount ($100), the difference ($55) is a [[hold-release]] — the excess hold is released, restoring $55 to the cardholder's available balance.",
+        "When the captured amount is less than the authorized amount, the excess is a [[hold-release]]: the remaining $55 reservation is cancelled and the cardholder's available balance is restored. Only the actual $45 ever reaches the ledger.",
       explore: { label: "View payments", href: "/payments" },
     },
     {
-      kind: "multi",
+      kind: "truefalse",
       id: "ch13-q5",
-      difficulty: "core",
+      difficulty: "intro",
       concept: "holds",
       prompt:
-        "Select ALL scenarios where the authorized amount may differ from the captured amount.",
-      options: [
-        "A petrol pump pre-authorises $100 but the final fill costs $45",
-        "A restaurant authorises the meal cost but the customer adds a tip at signing",
-        "A hotel pre-authorises a large security deposit but charges only the room rate",
-        "A grocery store with a fixed price item",
-        "A partial capture where only some ordered items are fulfilled",
-      ],
-      answers: [0, 1, 2, 4],
+        "In a single-message card transaction (such as a PIN debit or ATM withdrawal), authorization and clearing are fused into one step with no separate hold placed first.",
+      answer: true,
       explanation:
-        "[[holds]] are often for estimated amounts. Variable final amounts occur at petrol pumps (fuel quantity unknown), restaurants (tip unknown), hotels (damage deposits), and partial fulfilments. A fixed-price grocery item is typically captured for exactly the authorised amount.",
+        "The single-message variant collapses the two-step pattern: the issuer approves *and* commits the debit in one message, so money leaves immediately. There is no [[holds|hold phase]] — the mental model is closer to an instant payment than to the held-then-captured dual-message flow.",
     },
     {
       kind: "mc",
       id: "ch13-q6",
       difficulty: "core",
-      concept: "scheme-direction-pull",
+      concept: "hold-capture",
       prompt:
-        "Card payments use a four-party model. Which parties are involved?",
+        "When a merchant submits a presentment for a card transaction, which accounting entry does the issuer post?",
       options: [
-        "Cardholder, issuer, central bank, card network",
-        "Cardholder, issuer, merchant, acquirer — coordinated by the card network",
-        "Merchant, acquirer, card network, central bank",
-        "Cardholder, merchant, central bank, clearing house",
+        "Debit Clearing Suspense · Credit Cardholder Deposit",
+        "Debit Cardholder Deposit (Liability) · Credit Clearing Suspense (Liability)",
+        "Debit Cash (Asset) · Credit Cardholder Deposit",
+        "Debit Card Network Payable · Credit Reserve Account",
       ],
       answer: 1,
       explanation:
-        "The four parties are: **cardholder** (payer), **issuer** (cardholder's bank), **merchant** (payee), and **acquirer** (merchant's bank). The [[scheme-direction-pull]] card network routes authorization and clearing messages between them.",
-    },
-    {
-      kind: "truefalse",
-      id: "ch13-q7",
-      difficulty: "core",
-      concept: "account-status",
-      prompt:
-        "A frozen account can still receive incoming credits even though outgoing debits are blocked.",
-      answer: true,
-      explanation:
-        "[[account-status]] frozen blocks debit-side requests (including card authorization). It does **not** prevent incoming credits — a frozen account can still receive payments. Authorization is rejected because it would ultimately produce a debit entry.",
+        "At [[hold-capture]], the issuer posts: **Debit Cardholder Deposit (Liability)** — the cardholder's balance falls for the first time — and **Credit Clearing Suspense (Liability)** — the issuer now owes the network this amount. The hold on available balance is simultaneously removed.",
     },
     {
       kind: "mc",
-      id: "ch13-q8",
+      id: "ch13-q7",
       difficulty: "core",
-      concept: "hold-capture",
+      concept: "scheme-direction-pull",
       prompt:
-        "After a card payment is captured, how does it proceed to final settlement?",
+        "Card payments route through a four-party model. Which answer lists all four parties correctly?",
       options: [
-        "It settles immediately via a direct central bank wire",
-        "It becomes an ordinary debtor-to-creditor interbank payment, netting and settling via the same scheme machinery as any credit transfer",
-        "It waits until the cardholder manually confirms the charge",
-        "The card network settles directly with the issuer, bypassing clearing suspense",
+        "Cardholder · issuer · central bank · card network",
+        "Cardholder · issuer · merchant · acquirer (coordinated by the card network)",
+        "Merchant · acquirer · card network · central bank",
+        "Cardholder · merchant · clearing house · reserve bank",
       ],
       answer: 1,
       explanation:
-        "After [[hold-capture]], the card payment is just like any other interbank payment: the debtor leg has been posted, and the payment nets and settles through the same clearing and settlement machinery described in the payment-schemes chapter.",
-      explore: { label: "See settlement cycles", href: "/cycles" },
+        "The [[scheme-direction-pull|card scheme]] routes every transaction through four parties: the **cardholder** (payer), the **issuer** (cardholder's bank), the **merchant** (payee), and the **acquirer** (merchant's bank). The card network sits between issuer and acquirer, routing messages and computing net positions — it never holds the money itself.",
+    },
+    {
+      kind: "numeric",
+      id: "ch13-q8",
+      difficulty: "core",
+      concept: "holds",
+      prompt:
+        "An account has a book balance of $600 and an existing authorization hold of $200. A card terminal requests a new $150 authorization. If the authorization is approved, how many dollars is the available balance? (Enter a number of dollars.)",
+      answer: 250,
+      unit: "dollars",
+      tolerance: 0,
+      explanation:
+        "Available balance = book balance − total active [[holds]] = $600 − $200 − $150 = **$250**. The [[balance-book|book balance]] is still $600 — no posting has occurred — but $350 in active holds reduces what can be spent or authorized.",
     },
     {
       kind: "mc",
       id: "ch13-q9",
-      difficulty: "challenge",
+      difficulty: "core",
       concept: "hold-capture",
       prompt:
-        "A restaurant authorises $50 for a meal. The customer adds a $12 tip and the final capture is $62. Which statement is correct?",
+        "After a card payment is captured, where does the payment stand in the issuer's books?",
       options: [
-        "The capture is rejected because $62 exceeds the $50 authorization",
-        "The original $50 hold is released and a fresh $62 hold is placed",
-        "The capture posts $62 and releases the original $50 hold; the extra $12 was within a permitted overage",
-        "The capture posts only $50; the $12 tip requires a separate authorization",
+        "Fully settled — no further entries are needed",
+        "The authorization is reversed and a fresh transaction is initiated",
+        "The debtor leg is posted to Clearing Suspense; the payment awaits netting and settlement",
+        "The amount sits in the card network's account until end of day",
       ],
       answer: 2,
       explanation:
-        "Card schemes allow captures to exceed the authorized amount by a small overage (e.g., for tips). [[hold-capture]] posts the **final amount** ($62) and the original authorization ($50) is closed. The available balance and book balance both reflect the actual $62 charge.",
+        "[[hold-capture]] creates the **debtor leg**: the cardholder's deposit is debited and the issuer's Clearing Suspense is credited. From here the payment is ordinary — it nets with other card items across the clearing cycle and settles via a central-bank reserve move, exactly as a SEPA payment would.",
     },
     {
       kind: "truefalse",
       id: "ch13-q10",
-      difficulty: "challenge",
-      concept: "holds",
+      difficulty: "core",
+      concept: "account-status",
       prompt:
-        "In a single-message card transaction (e.g., PIN debit at ATM), a hold is placed first and a separate capture message follows later.",
+        "A frozen account blocks card authorizations because an authorization is a debit-side request.",
+      answer: true,
+      explanation:
+        "[[account-status]] frozen prevents all debits and new holds. A card authorization would ultimately produce a debit entry, so the issuer refuses it outright — no hold is placed and the purchase is declined at the terminal, the same outcome as any attempted debit on a frozen account.",
+    },
+    {
+      kind: "mc",
+      id: "ch13-q11",
+      difficulty: "core",
+      concept: "reversal",
+      prompt:
+        "A cardholder disputes a settled card charge and the merchant agrees to give the money back. How does a card refund differ from a ledger reversal?",
+      options: [
+        "There is no difference — all credits back to a cardholder are called reversals",
+        "A refund is a new credit transaction flowing back through the network; a ledger reversal is an equal-and-opposite correction of an erroneous posting",
+        "A refund voids the original hold before capture; a reversal posts a new debit",
+        "A reversal returns money via the original debit path; a refund creates a new authorization hold",
+      ],
+      answer: 1,
+      explanation:
+        "A [[reversal]] corrects an erroneous ledger entry by posting a mirror-image transaction. A card refund is different: it is a new credit transaction initiated by the merchant/acquirer that flows back through the network, crediting the cardholder's account. The original capture remains on the ledger; both the original charge and the refund credit appear as separate entries.",
+    },
+    {
+      kind: "multi",
+      id: "ch13-q12",
+      difficulty: "core",
+      concept: "payment-lifecycle",
+      prompt:
+        "Which of the following statements are true of the dual-message card payment lifecycle? Select all that apply.",
+      options: [
+        "Authorization places a hold on available balance and makes no ledger posting",
+        "The book balance falls at authorization, before any capture",
+        "Presentment converts the hold into a real accounting entry on the ledger",
+        "The card network holds the money between authorization and capture",
+        "The capture amount must exactly equal the authorized amount",
+      ],
+      answers: [0, 2],
+      explanation:
+        "In the [[payment-lifecycle]] dual-message flow: authorization places a [[holds|hold]] — no posting, only available balance moves — and presentment then converts that hold into the real debtor-leg posting. Book balance does not fall until capture. The network routes messages but never holds funds. The capture amount may legitimately differ from the authorization (tip additions, partial captures, gas pump true-up).",
+    },
+    {
+      kind: "mc",
+      id: "ch13-q13",
+      difficulty: "core",
+      concept: "clearing-vs-settlement",
+      prompt:
+        "Once a card payment is captured, how does it complete its journey through the interbank system?",
+      options: [
+        "The card network holds the funds and transfers them directly to the acquirer at end of day",
+        "Each card transaction settles gross and in real time via the central bank",
+        "The captured debtor leg nets across the clearing cycle and settles through the same reserve-movement machinery used by SEPA",
+        "The issuer wires funds directly to the merchant's deposit account",
+      ],
+      answer: 2,
+      explanation:
+        "After capture, a card payment is structurally identical to any other interbank credit. The [[clearing-vs-settlement|clearing and settlement]] machinery — netting, clearing suspense, central-bank reserve moves — applies unchanged. Card networks compute each bank's net position over a cycle and settle the net, reusing the existing rails rather than inventing new ones.",
+      explore: { label: "View settlement cycles", href: "/cycles" },
+    },
+    {
+      kind: "numeric",
+      id: "ch13-q14",
+      difficulty: "core",
+      concept: "hold-capture",
+      prompt:
+        "A restaurant authorizes $50 for a meal. The customer writes in a $14 tip and the final capture is $64. By how many dollars does the cardholder's book balance fall at capture? (Enter a number of dollars.)",
+      answer: 64,
+      unit: "dollars",
+      tolerance: 0,
+      explanation:
+        "[[hold-capture]] posts the **final captured amount** — $64 — to the ledger, not the original authorization of $50. Card schemes permit captures to exceed the authorized amount within a reasonable tolerance (such as a tip). The original $50 hold is released and the book balance falls by exactly **$64**.",
+    },
+    {
+      kind: "multi",
+      id: "ch13-q15",
+      difficulty: "core",
+      concept: "balance-holds",
+      prompt:
+        "Which statements about card authorization holds are correct? Select all that apply.",
+      options: [
+        "A hold reduces the available balance but leaves the book balance unchanged",
+        "An active hold is recorded as a debit entry in the general ledger",
+        "If a hold expires before capture, the available balance is automatically restored",
+        "Releasing a hold triggers a reversal transaction in the ledger",
+        "A hold only becomes a ledger entry when it is captured",
+      ],
+      answers: [0, 2, 4],
+      explanation:
+        "[[balance-holds]] live in the deposit layer, not the ledger. They reduce [[balance-available]] without posting anything. A released or expired hold produces no ledger entry — from the ledger's perspective it never happened. Only [[hold-capture]] converts a hold into a real posting.",
+    },
+    {
+      kind: "mc",
+      id: "ch13-q16",
+      difficulty: "challenge",
+      concept: "hold-release",
+      prompt:
+        "A card authorization for $200 is placed on an account. The merchant never submits a presentment, and the authorization window expires. What is the outcome?",
+      options: [
+        "The $200 is automatically captured and posted to the cardholder's account",
+        "The hold expires, the $200 is restored to available balance, and no ledger entry is ever posted",
+        "The $200 remains held permanently until the cardholder contacts their bank",
+        "The expired authorization converts to a formal debit that the merchant must later reverse",
+      ],
+      answer: 1,
+      explanation:
+        "[[hold-release]] by expiry: holds carry a finite authorization window. If the merchant does not capture within that window, the hold lapses automatically — the reserved $200 is restored to available balance and no posting ever reaches the ledger. From an accounting standpoint the authorization left no trace.",
+    },
+    {
+      kind: "numeric",
+      id: "ch13-q17",
+      difficulty: "challenge",
+      concept: "balance-available",
+      prompt:
+        "An account has a book balance of $1,000 and an existing hold of $400. A new card authorization for $350 is approved. How many dollars of available balance remain after this authorization? (Enter a number of dollars.)",
+      answer: 250,
+      unit: "dollars",
+      tolerance: 0,
+      explanation:
+        "[[balance-available]] = book balance − all active holds = $1,000 − $400 (existing) − $350 (new) = **$250**. The $350 authorization is approved because $250 ≥ 0. Both holds remain off-ledger; the [[balance-book|book balance]] is still $1,000.",
+    },
+    {
+      kind: "multi",
+      id: "ch13-q18",
+      difficulty: "challenge",
+      concept: "payment-lifecycle",
+      prompt:
+        "A hotel pre-authorizes $300 for a 3-night stay. The guest later orders $60 of room service and the hotel adds an incremental authorization. Which statements correctly describe the situation before final capture? Select all that apply.",
+      options: [
+        "The available balance is reduced by $300 from the initial authorization",
+        "The book balance has already fallen by $300",
+        "An incremental authorization can raise the total held amount above the original $300",
+        "Only one authorization hold can be active on an account at a time",
+        "The final capture will post only the original $300 regardless of incremental authorizations",
+      ],
+      answers: [0, 2],
+      explanation:
+        "In the incremental [[payment-lifecycle]] pattern, the initial authorization places a $300 [[holds|hold]] on available balance — the [[balance-book|book balance]] is untouched. An incremental authorization raises the total reservation above $300 to cover the room service. The final [[hold-capture|capture]] posts the actual billed amount, which may differ from any intermediate authorized figure.",
+    },
+    {
+      kind: "mc",
+      id: "ch13-q19",
+      difficulty: "challenge",
+      concept: "settlement-delay",
+      prompt:
+        "A cardholder makes a card purchase at noon on a Tuesday. According to typical card settlement timelines, when will the merchant's acquirer most likely receive the funds?",
+      options: [
+        "Immediately, as soon as the authorization is approved",
+        "By end of Tuesday (same-day settlement)",
+        "One to two business days after the transaction (T+1 to T+2)",
+        "Three to five business days later, matching check deposit timelines",
+      ],
+      answer: 2,
+      explanation:
+        "[[settlement-delay]] for card transactions is typically T+1 to T+2 — the merchant's bank receives funds one to two business days after the sale. This gap exists because captured items net across a clearing cycle before the interbank settlement move is made at the central bank. The cardholder sees an immediate hold at authorization, then a posted debit after settlement.",
+    },
+    {
+      kind: "truefalse",
+      id: "ch13-q20",
+      difficulty: "challenge",
+      concept: "reversal",
+      prompt:
+        "When a cardholder receives a refund on a settled card purchase, the original capture posting is reversed and removed from the ledger.",
       answer: false,
       explanation:
-        "Single-message flows combine authorization and clearing in **one step** — money is gone immediately. There is no separate hold-then-capture phase. This contrasts with dual-message (hold + later presentment) used for most credit card transactions.",
+        "Ledger postings are immutable — they are never deleted or removed. A [[reversal]] posts a new, equal-and-opposite transaction to correct an *error*. A card refund is different: it is a new credit transaction initiated by the merchant/acquirer, flowing back through the network to credit the cardholder. Both the original debit and the refund credit appear as separate entries on the ledger.",
     },
   ],
 };
