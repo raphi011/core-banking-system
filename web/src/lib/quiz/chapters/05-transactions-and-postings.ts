@@ -11,143 +11,304 @@ export const chapter: Chapter = {
       id: "ch5-q1",
       difficulty: "intro",
       concept: "double-entry",
-      prompt: "A transaction is described as a 'balanced set of entries posted atomically.' What does 'balanced' mean in this context?",
+      prompt:
+        "A transaction is described as a 'balanced set of entries posted atomically.' What does 'balanced' mean here?",
       options: [
         "The transaction touches the same number of debit and credit accounts",
-        "The total debits equal the total credits across all legs of the transaction",
+        "Total debits equal total credits across all legs of the transaction",
         "The transaction must involve exactly two accounts",
-        "Balanced means the ledger has been audited and confirmed correct",
+        "The ledger has been verified by an auditor",
       ],
       answer: 1,
       explanation:
-        "[[double-entry]] bookkeeping requires every transaction to balance: **total debits = total credits**. The number of legs can vary (a transaction can have three or more legs), but the sum of debits must equal the sum of credits.",
+        "In [[double-entry]] bookkeeping every transaction must balance — total debits must equal total credits, however many legs there are. The *number* of accounts is irrelevant; the *sums* must match.",
     },
     {
       kind: "truefalse",
       id: "ch5-q2",
       difficulty: "intro",
       concept: "reversal",
-      prompt: "To correct an incorrect posted transaction, you should delete or edit it in the ledger.",
+      prompt:
+        "To correct an incorrectly posted transaction, the right procedure is to edit or delete it in the ledger.",
       answer: false,
       explanation:
-        "The ledger is **immutable and append-only** — posted transactions are never edited or deleted. The correct method is a **[[reversal]]**: a new transaction in which every debit becomes a credit and vice versa, cancelling the original entry.",
+        "The ledger is **immutable and append-only** — posted transactions are never edited or deleted. To correct an error, a [[reversal]] is posted: a new transaction in which every original debit becomes a credit and vice versa, netting the effect to zero while preserving the full audit trail.",
     },
     {
       kind: "mc",
       id: "ch5-q3",
       difficulty: "intro",
       concept: "idempotency-key",
-      prompt: "Why does a payment API accept an idempotency key from the caller?",
+      prompt:
+        "Why does a payment API require callers to supply an idempotency key with each request?",
       options: [
-        "To encrypt the payment and protect against fraud",
-        "To prevent duplicate postings if the same request is retried after a network failure",
-        "To compress the request payload for faster transmission",
-        "To link the payment to a specific bank branch",
+        "To authenticate the caller's identity and authorise the transaction",
+        "To prevent the same logical operation from being posted twice if the request is retried",
+        "To compress and route the request through the payment network",
+        "To assign the transaction to a specific subledger",
       ],
       answer: 1,
       explanation:
-        "An [[idempotency-key]] is a unique ID (UUID) the caller assigns to a logical operation. If the network fails and the caller retries, the server recognises the key and returns the original result instead of posting a duplicate transaction.",
+        "Networks fail in the worst way: they lose the *response*, not the request. The [[idempotency-key]] is a unique identifier the caller assigns once per logical operation. If the same key arrives twice, the server recognises it and refuses to create a duplicate — the client can then look up the original transaction by that key.",
     },
     {
       kind: "mc",
       id: "ch5-q4",
-      difficulty: "core",
-      concept: "double-entry",
+      difficulty: "intro",
+      concept: "ledger-vs-subledger",
       prompt:
-        "A sender pays $100 to a recipient, and the bank charges a $2 fee. How many legs does this transaction have?",
-      options: ["1", "2", "3", "4"],
-      answer: 2,
+        "A bank's General Ledger contains a 'Customer Deposits' subledger holding 50,000 individual accounts. What does the General Ledger show for this subledger?",
+      options: [
+        "The balance of every individual customer account, listed separately",
+        "A combined total balance for all accounts in the subledger",
+        "Only the most recently posted transaction across all accounts",
+        "An alphabetical index of all customer account names",
+      ],
+      answer: 1,
       explanation:
-        "Three legs: (1) debit sender's account −$102, (2) credit recipient's account +$100, (3) credit Fee Income +$2. [[double-entry]] allows more than two legs as long as total debits equal total credits ($102 = $100 + $2).",
+        "The [[ledger-vs-subledger]] hierarchy exists so the General Ledger can show one summary total while the subledger holds the individual detail. If Customer Deposits sum to $10 M, the GL shows $10 M — not 50,000 lines. The subledger is where the per-customer granularity lives.",
     },
     {
       kind: "truefalse",
       id: "ch5-q5",
-      difficulty: "core",
-      concept: "double-entry",
-      prompt: "A trial balance proves that all transactions were posted correctly, with no errors.",
-      answer: false,
+      difficulty: "intro",
+      concept: "booking-date",
+      prompt:
+        "The booking date is the date a transaction is recorded in the system, which may differ from the date it takes economic effect.",
+      answer: true,
       explanation:
-        "A trial balance only verifies that **total debits equal total credits** — it is consistent with [[double-entry]] rules. It does NOT detect compensating errors (e.g., debiting the wrong account with the right amount), or entries posted to wrong accounts.",
+        "Every transaction carries two dates. The [[booking-date]] is when the system records the transaction; the value date is when it takes economic effect (e.g., when interest starts accruing). The two can diverge by days — a weekend wire transfer or a back-dated correction are common examples.",
     },
     {
       kind: "mc",
       id: "ch5-q6",
       difficulty: "core",
-      concept: "reversal",
-      prompt: "A $500 payment was posted to the wrong customer's account. What is the correct procedure?",
+      concept: "double-entry",
+      prompt:
+        "A customer sends $100 and the bank charges a $3 transfer fee. The transaction posts three legs: sender debited $100, recipient credited $97, fee-income account credited $3. Why does the system accept this posting?",
       options: [
-        "Update the original transaction's account field in the database",
-        "Delete the original posting and re-post to the correct account",
-        "Post a reversal transaction (all debits become credits, vice versa), then post a new correct transaction",
-        "Post an additional transaction to the correct account without reversing the error",
+        "Because the sender's debit equals the recipient's credit ($100 = $97) — the fee is ignored",
+        "Because three-leg transactions are always accepted regardless of balance",
+        "Because total debits ($100) equal total credits ($97 + $3 = $100)",
+        "Because the fee-income account is a revenue account and requires no balancing entry",
       ],
       answer: 2,
       explanation:
-        "The ledger is immutable. The proper fix is a **[[reversal]]** — a new transaction that mirror-images the original to net it to zero — followed by a new correct transaction. This preserves the full audit trail.",
-    },
-    {
-      kind: "multi",
-      id: "ch5-q7",
-      difficulty: "core",
-      concept: "idempotency-key",
-      prompt: "Which of the following are true about idempotency keys? (Select all that apply.)",
-      options: [
-        "They are unique UUIDs assigned per logical operation",
-        "If the same key is submitted twice, the second call returns the original result without a new posting",
-        "They must be regenerated on every retry to ensure uniqueness",
-        "They protect against duplicate transactions caused by network retries",
-        "They replace the need for double-entry bookkeeping",
-      ],
-      answers: [0, 1, 3],
-      explanation:
-        "[[idempotency-key]]: a UUID assigned once per logical operation. Retrying with the **same** key is safe — the server deduplicates. Regenerating the key on retry would defeat the purpose, creating a duplicate. Idempotency keys are unrelated to [[double-entry]].",
+        "[[double-entry]] requires total debits = total credits across *all* legs, not just one debit against one credit. The three-leg fee split works because $100 debit = $97 + $3 credits. The number of legs is unlimited; the balance invariant is not.",
     },
     {
       kind: "mc",
-      id: "ch5-q8",
-      difficulty: "challenge",
-      concept: "double-entry",
+      id: "ch5-q7",
+      difficulty: "core",
+      concept: "idempotency-key",
       prompt:
-        "A bank's trial balance shows total debits of $4,200,000 and total credits of $3,900,000. What does this indicate?",
+        "A payment request with idempotency key 'pay-xyz-001' is submitted and the transfer is posted successfully. The same request — identical key — is submitted again ten seconds later. What does the server do?",
       options: [
-        "The bank is profitable — debits exceed credits",
-        "The ledger has an error: an unbalanced transaction was posted, or a posting was missed",
-        "The bank has more assets than liabilities, which is normal and expected",
-        "Some accounts have not been closed at year-end yet",
+        "Posts a second transfer and the customer is charged twice",
+        "Rejects the second submission and signals that this key was already used",
+        "Posts a reversal of the original transfer automatically",
+        "Silently discards the retry and returns a blank response",
       ],
       answer: 1,
       explanation:
-        "A trial balance must balance: total debits = total credits. A $300,000 discrepancy means at least one [[double-entry]] transaction is unbalanced — either an entry is missing, incorrectly posted, or a figure was transposed. This requires investigation.",
+        "[[idempotency-key]] deduplication: the server stores which keys it has processed. Seeing the same key again, it refuses to create a duplicate and signals that the key was already used — the client can then look up the original transaction by that key rather than guessing whether the first attempt succeeded.",
     },
     {
       kind: "truefalse",
-      id: "ch5-q9",
-      difficulty: "challenge",
-      concept: "reversal",
+      id: "ch5-q8",
+      difficulty: "core",
       prompt:
-        "A reversal transaction must be posted with the same date as the original transaction it cancels.",
+        "After a reversal transaction is posted, the original transaction is permanently removed from the ledger.",
       answer: false,
       explanation:
-        "A **[[reversal]]** is a *new* transaction appended to the ledger — it carries its own posting date (typically the current date). The original transaction remains in history unchanged. Backdating is generally not permitted in an immutable ledger.",
+        "The ledger is **append-only**. A reversal posts a *new* transaction that exactly offsets the original — it does not remove anything. The original remains visible, marked as 'reversed,' and the reversal carries a back-reference to it. Both transactions form a permanent, auditable record.",
+    },
+    {
+      kind: "mc",
+      id: "ch5-q9",
+      difficulty: "core",
+      concept: "account-type-revenue",
+      prompt:
+        "In the three-leg fee-split transaction (sender debited $100, recipient credited $97, fee-income credited $3), what type of account is fee-income?",
+      options: [
+        "Asset — the bank now holds $3 more cash",
+        "Liability — the bank owes $3 to a third party",
+        "Revenue — the fee is income earned by the bank",
+        "Expense — the fee represents a processing cost",
+      ],
+      answer: 2,
+      explanation:
+        "A transfer fee is income the bank earns for its service. It flows into a [[account-type-revenue]] account, which has a **credit normal balance** — crediting it increases the bank's recognised income. A common error is to think cash is received, so an asset must be credited; the cash leg is elsewhere (or implicit in clearing), and the fee record itself is revenue.",
     },
     {
       kind: "mc",
       id: "ch5-q10",
-      difficulty: "challenge",
-      concept: "idempotency-key",
+      difficulty: "core",
+      concept: "reversal",
       prompt:
-        "A mobile payment app sends a $50 transfer. The server processes it but the response is lost in transit. The app retries with the same idempotency key. What should happen?",
+        "A reversal transaction is posted to cancel a mistaken entry. Which statement correctly describes the relationship between the original and the reversal in the ledger?",
       options: [
-        "The server posts a second $50 transfer — the first may not have succeeded",
-        "The server recognises the key, skips re-processing, and returns the original response",
-        "The server rejects the retry as a suspected replay attack",
-        "The server posts a compensating reversal and then a new transfer",
+        "The reversal replaces the original; the original record is deleted",
+        "Both transactions exist; the reversal carries a back-reference to the original, and the original is marked 'reversed'",
+        "The reversal and original are merged into a single net-zero transaction",
+        "The original is hidden from reporting but stored in a separate archive",
       ],
       answer: 1,
       explanation:
-        "This is the core purpose of [[idempotency-key]]: the server already committed the first transaction. Seeing the same key, it returns the stored result without posting again — the customer pays exactly once regardless of network failures.",
+        "An immutable ledger never deletes or merges entries. A [[reversal]] is a new, independent transaction that references the transaction it undoes. The original is marked 'reversed' for reporting; the reversal shows the correction. Two true facts coexist in the record: the error happened, and it was later corrected.",
+    },
+    {
+      kind: "multi",
+      id: "ch5-q11",
+      difficulty: "core",
+      concept: "double-entry",
+      prompt:
+        "Which of the following are properties of a valid transaction? (Select all that apply.)",
+      options: [
+        "Total debits equal total credits across all entries",
+        "The transaction must have exactly two entries — one debit and one credit",
+        "All entries are recorded together atomically — either all succeed or none do",
+        "Any number of entries is allowed, provided total debits and credits balance",
+        "A transaction may be partially committed if some legs succeed and one fails",
+      ],
+      answers: [0, 2, 3],
+      explanation:
+        "[[double-entry]] transactions are **balanced** (debits = credits) and **atomic** (all-or-nothing). They may have any number of legs — a two-legged transfer and a three-legged fee split are equally valid. Partial commits are forbidden: if any leg fails, the whole transaction is rejected and nothing is recorded.",
+    },
+    {
+      kind: "numeric",
+      id: "ch5-q12",
+      difficulty: "core",
+      concept: "amount-cents",
+      prompt:
+        "A fee-split transaction posts two credit entries: a recipient account credited 9700 units and a fee-income account credited 300 units. Both amounts are in minor currency units (cents). What is the total value of all credits expressed in dollars?",
+      answer: 100,
+      unit: "dollars",
+      tolerance: 0,
+      explanation:
+        "9700 cents + 300 cents = 10 000 cents. [[amount-cents]] — storing amounts as integer minor units avoids floating-point errors. 10 000 cents ÷ 100 = **$100**. The sender was debited $100, and the two credit legs sum to the same amount, confirming the transaction is balanced.",
+    },
+    {
+      kind: "mc",
+      id: "ch5-q13",
+      difficulty: "core",
+      concept: "idempotency-key",
+      prompt:
+        "A mobile banking app sends a $75 transfer. The server records the transfer but the response is lost before reaching the app. The app retries with the same idempotency key. What is the correct server behavior?",
+      options: [
+        "Post a second $75 transfer — the first may not have fully succeeded",
+        "Reject the retry permanently as a suspected replay attack",
+        "Recognise the key, refuse to post a duplicate, and signal that this key was already used so the app can look up the original",
+        "Post a $75 reversal to cancel the first transfer, then post a fresh one",
+      ],
+      answer: 2,
+      explanation:
+        "This is the exact problem [[idempotency-key]] solves. A lost response does not mean a lost transaction — the server already committed. Retrying with the **same** key is safe: the server finds the key in its records and signals it was already used. The customer is charged exactly once regardless of network failures.",
       explore: { label: "See payments", href: "/payments" },
+    },
+    {
+      kind: "numeric",
+      id: "ch5-q14",
+      difficulty: "core",
+      concept: "amount-cents",
+      prompt:
+        "A sender is debited $100 for a transfer that includes a $3 fee. The recipient receives the remainder. By how many dollars does the recipient's account increase?",
+      answer: 97,
+      unit: "dollars",
+      tolerance: 0,
+      explanation:
+        "Debit side: $100. Credit side must also total $100: $3 to fee income + $97 to recipient = $100. [[amount-cents]] records these as 10 000, 300, and 9700 integer cents respectively. The recipient's account is credited **$97**.",
+    },
+    {
+      kind: "truefalse",
+      id: "ch5-q15",
+      difficulty: "core",
+      concept: "normal-balance",
+      prompt: "Debiting a liability account always increases its balance.",
+      answer: false,
+      explanation:
+        "Each account type has a [[normal-balance]] direction. Liabilities have a **credit** normal balance: a credit *increases* the liability and a debit *decreases* it. Debiting a customer's deposit account (a liability) reduces the bank's obligation to that customer — it doesn't grow the balance.",
+    },
+    {
+      kind: "multi",
+      id: "ch5-q16",
+      difficulty: "challenge",
+      concept: "reversal",
+      prompt:
+        "Which of the following statements correctly describe a reversal transaction? (Select all that apply.)",
+      options: [
+        "Every debit in the original becomes a credit in the reversal, and vice versa",
+        "The reversal carries a reference back to the transaction it cancels",
+        "The original transaction is edited so its amounts become zero",
+        "The net economic effect across all affected accounts is zero after the reversal is posted",
+        "The original transaction disappears from audit logs once reversed",
+      ],
+      answers: [0, 1, 3],
+      explanation:
+        "A [[reversal]] exactly mirrors the original (debit↔credit flip) and references the transaction it cancels. Because it is a perfect mirror, the combined net effect on every affected account is zero. The ledger is append-only: the original is never edited or removed — only marked 'reversed.' Both records remain in audit logs permanently.",
+    },
+    {
+      kind: "mc",
+      id: "ch5-q17",
+      difficulty: "challenge",
+      prompt:
+        "A system receives a three-leg posting: sender debited $100, recipient credited $60, fee-income credited $30. What does the system do?",
+      options: [
+        "Posts the transaction and flags it for manual review, since the imbalance is small",
+        "Rejects the entire transaction — no entries are recorded",
+        "Posts the legs that fit within the debit total and discards the remainder",
+        "Automatically adds a balancing credit entry to make up the $10 difference",
+      ],
+      answer: 1,
+      explanation:
+        "The ledger enforces the balance invariant strictly: total debits must equal total credits. Here debits = $100 but credits = $60 + $30 = $90 — a $10 shortfall. The system rejects the **entire** transaction atomically; no partial posting occurs. The caller must correct the entries and resubmit with a balanced set.",
+    },
+    {
+      kind: "numeric",
+      id: "ch5-q18",
+      difficulty: "challenge",
+      concept: "amount-cents",
+      prompt:
+        "A $10,000 loan disbursement is recorded as a single multi-leg transaction: loan-receivable asset debited $10,000; customer deposit credited $10,000; customer deposit debited $200 (origination fee); fee-revenue credited $200. What is the net credit to the customer's deposit account in dollars?",
+      answer: 9800,
+      unit: "dollars",
+      tolerance: 0,
+      explanation:
+        "The customer's deposit receives two legs in the same transaction: a credit of $10,000 and a debit of $200 (origination fee). Net: $10,000 − $200 = **$9,800**. [[amount-cents]] arithmetic: 1 000 000 − 20 000 = 980 000 cents = $9,800. All four legs balance: total debits ($10,000 + $200) = total credits ($10,000 + $200) = $10,200.",
+    },
+    {
+      kind: "multi",
+      id: "ch5-q19",
+      difficulty: "challenge",
+      concept: "balance-book",
+      prompt:
+        "A trial balance lists: Loan Receivable (Asset) $15,000 debit; Customer Deposits (Liability) $12,000 credit; Fee Income (Revenue) $3,000 credit. Which of the following statements are true? (Select all that apply.)",
+      options: [
+        "The trial balance is balanced: total debits ($15,000) equal total credits ($12,000 + $3,000)",
+        "The balanced trial balance proves that all transactions were posted to the correct accounts",
+        "A trial balance that balances guarantees no bookkeeping errors exist anywhere",
+        "Any new posting — including a reversal — must itself be balanced, or it will break the trial balance",
+      ],
+      answers: [0, 3],
+      explanation:
+        "The [[balance-book]] invariant: total debits must equal total credits in a trial balance. Here $15,000 Dr = $12,000 + $3,000 Cr — it is balanced. However, balance only proves the *sum* is correct; it does NOT detect compensating errors such as debiting the wrong account with the right amount. Every new posting, including a reversal, must itself be balanced to preserve the invariant.",
+    },
+    {
+      kind: "mc",
+      id: "ch5-q20",
+      difficulty: "challenge",
+      concept: "account-type-expense",
+      prompt:
+        "A bank posts monthly savings interest: customer deposit credited $100 and a tax-withholding liability credited $20. Which entry completes this transaction so it balances?",
+      options: [
+        "Debit interest-expense $80 — only the net amount paid to the customer is expensed",
+        "Debit interest-expense $120 — the full obligation including tax withholding",
+        "Credit interest-expense $120 — revenue accounts increase with credits",
+        "Debit cash $120 — the interest is paid directly from the bank's cash reserves",
+      ],
+      answer: 1,
+      explanation:
+        "Total credits = $100 + $20 = $120. The balancing debit must also be $120, going to interest-expense. [[account-type-expense]] accounts have a **debit normal balance** — debiting one increases the bank's recognised cost. The $20 tax is withheld on behalf of the customer (a liability the bank owes to the tax authority), not deducted from the bank's expense — the bank still incurred the full $120 interest obligation.",
     },
   ],
 };
