@@ -13,147 +13,296 @@ export const chapter: Chapter = {
       concept: "booking-date",
       prompt: "What does the booking date represent in a banking transaction?",
       options: [
-        "The date funds become economically available",
+        "The date funds become available to the customer",
         "The date the transaction was recorded in the system",
-        "The date interest starts accruing",
-        "The date the bank confirms the transaction with the customer",
+        "The date interest starts accruing on the account",
+        "The date the bank notifies the customer of the transaction",
       ],
       answer: 1,
       explanation:
-        "The [[booking-date]] is purely a processing timestamp — it records when the system captured the entry. Economic effect (interest, availability) follows the [[value-date]].",
+        "The [[booking-date]] is purely a processing timestamp — it records when the system captured the entry. Economic effects such as interest accrual and fund availability follow the [[value-date]], not the booking date.",
     },
     {
       kind: "mc",
       id: "ch6-q2",
       difficulty: "intro",
       concept: "value-date",
-      prompt: "What does the value date determine?",
+      prompt: "Which of the following is primarily governed by the value date?",
       options: [
-        "When the bank's back-office team reviewed the transaction",
-        "When the transaction appears in audit logs",
-        "When interest starts and funds become available",
-        "When the customer's statement is generated",
+        "When the transaction appears in audit trails and operational reports",
+        "When the bank's back-office team reviews the transaction",
+        "When interest starts accruing and funds become economically available",
+        "When the customer receives a statement notification",
       ],
       answer: 2,
       explanation:
-        "The [[value-date]] is the economic effective date. Interest accrual, fund availability, and period-end reporting all follow the value date, not the booking date.",
+        "The [[value-date]] is the economic effective date. Interest accrual, fund availability, and period-end regulatory reporting all follow the value date, not the [[booking-date]].",
     },
     {
       kind: "truefalse",
       id: "ch6-q3",
       difficulty: "intro",
-      concept: "booking-date",
       prompt:
-        "For a simple cash deposit made in a branch, the booking date and value date are always the same.",
+        "For a simple cash deposit made in a branch, the booking date and value date always coincide.",
       answer: true,
       explanation:
-        "Cash deposits are the textbook case where [[booking-date]] and [[value-date]] coincide — the funds are immediately available and interest starts the same day they are recorded.",
+        "Cash deposits are the textbook case where the two dates are identical — funds are immediately available and interest begins the same moment they are recorded. Divergence arises only when clearing delays, settlement lags, or explicit back-dating is involved.",
     },
     {
       kind: "mc",
       id: "ch6-q4",
-      difficulty: "core",
-      concept: "value-date",
+      difficulty: "intro",
+      concept: "settlement-delay",
       prompt:
-        "A wire transfer arrives at a bank on Friday evening after the cut-off. The bank books it Friday but sets the value date to Monday. Why?",
+        "A wire transfer arrives Friday evening after the cut-off. Over a long holiday weekend, how far can the gap between booking date and value date stretch?",
       options: [
-        "The bank wants to earn interest over the weekend",
-        "Monday is when the funds economically take effect — the bank cannot act on them until then",
-        "Value dates must always be a business day, so Friday is never valid",
-        "Wires always have a two-day settlement delay",
+        "1 calendar day",
+        "2 calendar days",
+        "3 calendar days",
+        "4 to 5 calendar days",
       ],
-      answer: 1,
+      answer: 3,
       explanation:
-        "The [[value-date]] reflects economic reality. Because the receiving bank cannot deploy the funds until Monday, value-dating to Monday correctly captures when the funds take effect. The [[booking-date]] (Friday) only records when the instruction was captured.",
-    },
-    {
-      kind: "mc",
-      id: "ch6-q5",
-      difficulty: "core",
-      concept: "booking-date",
-      prompt:
-        "A customer deposits a check on Monday. The bank books it Monday but sets the value date to Wednesday. What will be true on Tuesday?",
-      options: [
-        "The customer can withdraw the funds because the booking date has passed",
-        "Interest has been accruing since Monday",
-        "The funds are not yet available and no interest has accrued",
-        "The check is considered dishonored",
-      ],
-      answer: 2,
-      explanation:
-        "Availability and interest both follow the [[value-date]] (Wednesday), not the [[booking-date]] (Monday). On Tuesday the transaction is recorded but has not yet taken economic effect.",
+        "A Friday evening booking and a next-business-day [[value-date]] gives a 3-day gap for a regular weekend. A long holiday weekend can push the [[settlement-delay]] to 4 or 5 calendar days before funds take economic effect.",
     },
     {
       kind: "truefalse",
-      id: "ch6-q6",
-      difficulty: "core",
-      concept: "value-date",
-      prompt: "The value date must always be on or after the booking date.",
+      id: "ch6-q5",
+      difficulty: "intro",
+      prompt:
+        "A check deposited on Monday and immediately recorded by the bank earns interest from Monday onward.",
       answer: false,
       explanation:
-        "The [[value-date]] can be *earlier* than the [[booking-date]]. Back-dated corrections are a common example: the system records the fix today (booking date = today) but value-dates it to the past so interest is recalculated correctly for the historical period.",
+        "Interest follows the [[value-date]], not the [[booking-date]]. A check booked on Monday but value-dated Wednesday earns no interest until Wednesday — the booking date is purely a processing timestamp with no bearing on when interest begins.",
     },
     {
       kind: "mc",
+      id: "ch6-q6",
+      difficulty: "core",
+      concept: "booking-date",
+      prompt:
+        "A customer deposits a check on Monday (booking date). The bank sets the value date to Wednesday. What is true on Tuesday?",
+      options: [
+        "The customer can withdraw the funds because the booking has been processed",
+        "Interest has been accruing since Monday when the bank recorded the check",
+        "The funds are not yet available and no interest has accrued",
+        "The check is considered dishonored until the value date passes",
+      ],
+      answer: 2,
+      explanation:
+        "Availability and interest both follow the [[value-date]] (Wednesday). On Tuesday the transaction carries a [[booking-date]] of Monday — it is recorded — but it has not yet taken economic effect.",
+    },
+    {
+      kind: "truefalse",
       id: "ch6-q7",
       difficulty: "core",
       concept: "value-date",
       prompt:
-        "An accountant discovers a posting error from last Tuesday and corrects it today (Friday). The correction should carry which value date?",
-      options: [
-        "Today's date, because that is when the correction was made",
-        "Last Tuesday, so interest and balances reflect the correct historical position",
-        "Next Monday, to give the system time to process the adjustment",
-        "The end of the current month",
-      ],
-      answer: 1,
+        "The value date of a transaction must always fall on or after its booking date.",
+      answer: false,
       explanation:
-        "Back-dated corrections use the [[value-date]] of the original erroneous event. This ensures that interest calculations and period-end balance snapshots are accurate for the historical date, even though the [[booking-date]] is today.",
+        "The [[value-date]] can be *earlier* than the [[booking-date]]. Back-dated corrections are a common example: the bank records the fix today but assigns a past value date so that interest and balances are correctly restated for the historical period.",
     },
     {
       kind: "mc",
       id: "ch6-q8",
-      difficulty: "challenge",
+      difficulty: "core",
       concept: "value-date",
       prompt:
-        "A standing order is set up today (Wednesday) to pay a bill next Monday. Which statement is correct?",
+        "An operations team discovers on March 5 that a corporate payment should have settled on February 28. Which value date should the correction entry carry?",
       options: [
-        "Both booking date and value date are Wednesday",
-        "Booking date is Wednesday; value date is next Monday",
-        "Booking date is next Monday; value date is Wednesday",
-        "Both dates are next Monday",
+        "March 5 — the date the correction is booked",
+        "February 28 — the date the economic event should have occurred",
+        "February 1 — the first day of the month in which the error falls",
+        "The next business day after March 5",
       ],
       answer: 1,
       explanation:
-        "Forward-dated standing orders are captured and recorded immediately — [[booking-date]] = Wednesday. But the economic effect (funds leave the account, interest stops) does not happen until the execution date — [[value-date]] = Monday.",
-    },
-    {
-      kind: "truefalse",
-      id: "ch6-q9",
-      difficulty: "challenge",
-      concept: "value-date",
-      prompt:
-        "A bank's period-end balance report should include all transactions whose booking date falls within the period, regardless of value date.",
-      answer: false,
-      explanation:
-        "Correct period-end reporting uses the [[value-date]], not the [[booking-date]]. Including transactions by booking date would misstate balances, interest, and liquidity positions — a transaction booked in the period but value-dated outside it has not yet taken economic effect.",
+        "Back-dated corrections carry the [[value-date]] of the original economic event (February 28) even though the [[booking-date]] is March 5. This ensures interest for the intervening days is calculated correctly and the historical balance position is accurate.",
     },
     {
       kind: "mc",
-      id: "ch6-q10",
-      difficulty: "challenge",
+      id: "ch6-q9",
+      difficulty: "core",
       concept: "booking-date",
       prompt:
-        "Which of the following correctly describes the relationship between booking date and value date?",
+        "A customer creates a standing order on January 20 to pay rent on February 1. Which statement correctly describes the two dates?",
       options: [
-        "They are always identical",
-        "The booking date records system capture; value date governs economic effect — they can differ in either direction",
-        "Value date is always later than booking date to allow for clearing",
-        "Booking date is always later than value date because posting lags reality",
+        "Booking date January 20; value date February 1",
+        "Both dates are January 20 — when the instruction was captured",
+        "Booking date February 1; value date January 20",
+        "Both dates are February 1 — when money actually moves",
+      ],
+      answer: 0,
+      explanation:
+        "The instruction is captured and recorded immediately — [[booking-date]] = January 20. Money does not move and interest implications do not begin until February 1 — [[value-date]] = February 1. This forward-dated standing order shows that the value date can lie well after the booking date.",
+    },
+    {
+      kind: "truefalse",
+      id: "ch6-q10",
+      difficulty: "core",
+      concept: "balance-book",
+      prompt:
+        "A transaction posted today with a value date two weeks in the future immediately increases the account's book balance.",
+      answer: true,
+      explanation:
+        "The [[balance-book]] (ledger balance) reflects every posted transaction ordered by booking date, regardless of when the value date falls. The value-date balance (interest-bearing balance) would not yet include this entry — so book balance and value-date balance temporarily diverge.",
+    },
+    {
+      kind: "mc",
+      id: "ch6-q11",
+      difficulty: "core",
+      concept: "balance-available",
+      prompt:
+        "An account starts at $1,000. A check for $200 is deposited and posted immediately (booking date today, value date in two days). The bank places a $200 hold on the deposit while it clears. What is the available balance?",
+      options: [
+        "$1,200 — the book balance after posting",
+        "$1,000 — book balance minus the $200 hold",
+        "$800 — deducting both the original balance and the hold",
+        "$0 — the account is frozen until the value date",
       ],
       answer: 1,
       explanation:
-        "[[booking-date]] and [[value-date]] serve different purposes and can diverge in either direction. Value-dated earlier than booking = back-dated correction. Value-dated later = future-dated standing order or a check clearing delay. For simple cash deposits they coincide.",
+        "[[balance-available]] = book balance − active holds = $1,200 − $200 = $1,000. Although the check already appears in the [[balance-book]], the hold prevents those funds from being spent until the check clears and the value date arrives.",
+    },
+    {
+      kind: "numeric",
+      id: "ch6-q12",
+      difficulty: "core",
+      concept: "balance-book",
+      prompt:
+        "An account holds $800. A check for $300 is deposited and immediately posted with today's booking date but a value date two business days away. What is the book balance in dollars immediately after posting?",
+      answer: 1100,
+      unit: "dollars",
+      tolerance: 0,
+      explanation:
+        "The [[balance-book]] includes all posted transactions by booking date regardless of value date. The $300 check is posted, so book balance = $800 + $300 = **$1,100**. The value-date balance remains $800 until the value date arrives.",
+    },
+    {
+      kind: "numeric",
+      id: "ch6-q13",
+      difficulty: "core",
+      concept: "balance-available",
+      prompt:
+        "Same account: $800 starting balance, $300 check posted today and value-dated two business days away. The bank places a $300 hold on the deposit until clearance. What is the available balance in dollars?",
+      answer: 800,
+      unit: "dollars",
+      tolerance: 0,
+      explanation:
+        "[[balance-available]] = book balance − holds = $1,100 − $300 = **$800**. Even though the check raises the [[balance-book]], the hold matches the deposit amount exactly, leaving available funds unchanged until the value date passes and the hold is released.",
+    },
+    {
+      kind: "mc",
+      id: "ch6-q14",
+      difficulty: "core",
+      concept: "reversal",
+      prompt:
+        "A $500 credit was posted February 3 with a value date of February 3. On February 10 the bank discovers it was an error and posts a reversal. Which value date should the reversal carry to correctly unwind the interest effect?",
+      options: [
+        "February 10 — the date the reversal is booked",
+        "February 3 — the original value date",
+        "February 1 — the start of the relevant period",
+        "No value date — reversals are purely accounting entries",
+      ],
+      answer: 1,
+      explanation:
+        "A [[reversal]] must mirror the original transaction's [[value-date]] (February 3) so that interest accrued from February 3 onward is correctly unwound. Using February 10 as the value date would leave the account with incorrect interest for the intervening seven days.",
+    },
+    {
+      kind: "multi",
+      id: "ch6-q15",
+      difficulty: "core",
+      prompt:
+        "Which of the following does the value date govern? Select all that apply.",
+      options: [
+        "When interest starts or stops accruing",
+        "When funds become available to the account holder",
+        "When the transaction appears in the bank's audit trail",
+        "Which business day 'owns' the transaction for period-end balance calculations",
+      ],
+      answers: [0, 1, 3],
+      explanation:
+        "The [[value-date]] governs economic effect: interest accrual, fund availability, and balance-period assignment. Audit-trail ordering and operational reports follow the [[booking-date]], not the value date.",
+    },
+    {
+      kind: "mc",
+      id: "ch6-q16",
+      difficulty: "challenge",
+      concept: "statement",
+      prompt:
+        "A transaction is booked on February 25 with a value date of March 1. How does it appear in the customer's February bank statement?",
+      options: [
+        "Listed in February's transactions AND counted in February's closing balance",
+        "Listed in February's transactions but NOT counted in February's closing balance",
+        "Not listed in February's transactions but IS counted in February's closing balance",
+        "Excluded from both February and March statements",
+      ],
+      answer: 1,
+      explanation:
+        "[[statement|Statements]] list transactions chronologically by [[booking-date]], so this entry appears in February's listing. But the closing balance is computed from [[value-date|value dates]] — with a value date of March 1, this transaction does not yet affect February's closing balance. This is why listed transactions on a statement may not appear to reconcile with the balance change shown.",
+    },
+    {
+      kind: "mc",
+      id: "ch6-q17",
+      difficulty: "challenge",
+      concept: "clearing-vs-settlement",
+      prompt:
+        "The booking-vs-value-date gap is described as 'precisely the window between initiating a payment and settling it.' In payment network terms, this gap corresponds to:",
+      options: [
+        "The difference between gross and net settlement models",
+        "The interval between clearing (initiation) and final settlement",
+        "The delay between hold authorization and hold capture",
+        "The lag between a ledger posting and its reconciliation",
+      ],
+      answer: 1,
+      explanation:
+        "[[clearing-vs-settlement|Clearing]] is when the payment is initiated and booked (the [[booking-date]]); settlement is when funds finally and irrevocably move (the [[value-date]]). The two-date distinction introduced in this chapter is the same gap that governs how money moves between banks in the payment network chapters.",
+    },
+    {
+      kind: "multi",
+      id: "ch6-q18",
+      difficulty: "challenge",
+      prompt:
+        "Which of the following parties can determine or constrain the value date of a transaction? Select all that apply.",
+      options: [
+        "The bank's automated rules engine",
+        "Payment networks such as SWIFT",
+        "The customer, for scheduled payments and standing orders",
+        "The beneficiary (receiving) account holder",
+      ],
+      answers: [0, 1, 2],
+      explanation:
+        "The [[value-date]] is set by automated bank rules (for most transactions), by payment networks that carry a value-date field (e.g., SWIFT), and by the customer when choosing when a scheduled payment takes effect. Regulation (e.g., US Reg CC) bounds all of the above. The beneficiary's account holder has no role in determining the value date.",
+    },
+    {
+      kind: "multi",
+      id: "ch6-q19",
+      difficulty: "challenge",
+      concept: "snapshot",
+      prompt:
+        "Which of the following are true of end-of-day balance snapshots? Select all that apply.",
+      options: [
+        "They are calculated using value dates, not booking dates",
+        "They form the basis for the bank's interest accrual calculations",
+        "They include forward-value-dated transactions not yet in economic effect",
+        "They determine the opening balance for the following statement period",
+      ],
+      answers: [0, 1, 3],
+      explanation:
+        "[[snapshot|End-of-day snapshots]] capture the value-date balance: only transactions whose [[value-date]] has passed. This makes them the authoritative basis for interest and for the opening and closing balances shown on customer statements. Forward-value-dated transactions appear in the [[balance-book]] but are not yet in the snapshot.",
+    },
+    {
+      kind: "numeric",
+      id: "ch6-q20",
+      difficulty: "challenge",
+      concept: "statement-amount",
+      prompt:
+        "An account's value-date balance at the end of January is $500. Two transactions are then posted: a $200 credit posted January 31 with a value date of February 1, and a $100 credit posted February 25 with a value date of March 1. What is the account's February closing balance in dollars?",
+      answer: 700,
+      unit: "dollars",
+      tolerance: 0,
+      explanation:
+        "The [[statement-amount|closing balance]] is computed from [[value-date|value dates]]. The $200 credit has value date February 1 — within February — raising the balance to $700. The $100 credit has value date March 1 — outside February — so it does not affect February's closing balance. Result: $500 + $200 = **$700**.",
     },
   ],
 };
